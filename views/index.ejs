@@ -54,33 +54,36 @@
             
           </div>
           <div class="col-auto">
-            <form action="/logout" method="POST">
-              <button class="btn btn-primary" type="submit">Logout</a>
-            </form>
-            
+              <a class="btn btn-primary" href="/logout">Logout</a>
           </div>
         </div>
         <hr/>
         <div class="row">
-          <div class="col">
+          <div class="col-6">
             <div><b>Client ID</b></div>
             <small class="text-muted">This is the ID you use to access the API</small>
             <% if (user.clientId != "") { %>
-              <p><%= user.clientId %></p>
+              <p class="text-break"><%= user.clientId %></p>
             <% } else { %>
               <p>-Not Generated Yet-</p>
             <% } %> 
           </div>
-          <div class="col">
+          <div class="col-6">
             <div><b>Client Secret</b></div>
             <small class="text-muted">This is what you'll send in the Authorization header when connecting to the API</small>
             <% if (user.clientSecret != "") { %>
-              <p><%= user.clientSecret %></p>
+              <p class="text-break"><%= user.clientSecret %></p>
             <% } else { %>
               <p>-Not Generated Yet-</p>
             <% } %> 
           </div>
         </div>
+        <div class="row">
+          <div class="col">
+            <a class="btn btn-primary btn-block" type="button" href="/generate">Revoke and Regenerate</a>
+          </div>
+        </div>
+        
       <% } %>
     </div>
 

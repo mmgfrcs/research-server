@@ -64,6 +64,41 @@ function insertUser(name, pass) {
     });
 }
 
+/**
+ * @typedef UserDbData
+ * @property {string} name 
+ * @property {string} pass
+ * @property {string} clientId
+ * @property {string} clientSecret 
+ */
+
+/**
+ * Update user
+ * @param {string} name The user's name.
+ * @param {UserDbData} updateData The data object used to update the user.
+ */
+function updateUser(name, updateData) {
+    let userIdx = data.researcher.findIndex(val => val.name == name);
+    if(updateData.password !== undefined) {
+        bcrypt.hash(updateData.pass, 10, function(err, hash) {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            data.researcher[userIdx].password = hash;
+            if(updateData.name !== undefined) data.researcher[userIdx].name = updateData.name;
+            if(updateData.clientId !== undefined) data.researcher[userIdx].clientId = updateData.clientId;
+            if(updateData.clientSecret !== undefined) data.researcher[userIdx].clientSecret = updateData.clientSecret;
+        })
+    }
+    else {
+        if(updateData.name !== undefined) data.researcher[userIdx].name = updateData.name;
+        if(updateData.clientId !== undefined) data.researcher[userIdx].clientId = updateData.clientId;
+        if(updateData.clientSecret !== undefined) data.researcher[userIdx].clientSecret = updateData.clientSecret;
+    }
+    
+}
+
 module.exports = {
-    init, getUserCount, findUser, insertUser
+    init, getUserCount, findUser, insertUser, updateUser
 }

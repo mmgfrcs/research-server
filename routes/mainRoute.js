@@ -6,6 +6,8 @@ let db = require("../src/db");
 let session = require("express-session");
 let flash = require("express-flash");
 let LocalStrategy = require("passport-local").Strategy;
+let jwt = require("jsonwebtoken");
+let crypto = require("crypto");
 
 let router = express.Router();
 let config = undefined;
@@ -43,19 +45,9 @@ router.use(passport.initialize());
 router.use(passport.session());
 router.use(flash());
 
-router.use((_req, _res, next) => {
-    if(config === undefined) {
-        const file = fs.readFileSync('./config/config.yml', 'utf8')
-        config = yaml.parse(file);
-        if(config.preconfigure == true) {
-            let username = Date.now();
-            let userpass = "pass";
-            db.insertUser(username, userpass);
-            console.log("Preconfigure: User " + username + ", password " + userpass);
-        }
-    }
-    next();
-})
+//Get config
+const file = fs.readFileSync('./config/config.yml', 'utf8')
+config = yaml.parse(file);
 
 router.use(express.static("public"));
 
@@ -72,8 +64,19 @@ router.post("/login", passport.authenticate('local', {failureRedirect: "/", fail
     res.redirect("/");
 })
 
-router.post("/logout", (req, res) => {
+router.get("/logout", (req, res) => {
     req.logout();
     res.redirect("/");
 });
+
+router.get("/generate", (req, res) => {
+    if(req.user) {
+        let id = crypto.randomBytes(16).toString('hex');
+        let sec = jwt.sign(req.user.name, id);
+        db.updateUser(req.user.name, {clientId: id, clientSecret: sec});
+        res.redirect("/");
+    }
+    else res.sendStatus(400);
+})
+
 module.exports = router;

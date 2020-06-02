@@ -6,6 +6,7 @@ let cors = require("cors");
 let morgan = require("morgan");
 let path = require("path");
 let yaml = require("yaml");
+let fs = require("fs");
 
 //Routes and Scripts
 let db = require("./src/db");
@@ -18,6 +19,14 @@ db.init();
 let app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+const file = fs.readFileSync('./config/config.yml', 'utf8')
+config = yaml.parse(file);
+if(config.preconfigure == true) {
+    let username = Date.now();
+    let userpass = "pass";
+    db.insertUser(username, userpass);
+    console.log("Preconfigure: User " + username + ", password " + userpass);
+}
 
 //Use dependents
 app.use(helmet({hsts: {maxAge: 900}}));
@@ -25,8 +34,6 @@ app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(cors());
 app.use(morgan("tiny"));
-
-
 
 //app.use("/api/data", resData);
 app.use("/api/researcher", researchers);
