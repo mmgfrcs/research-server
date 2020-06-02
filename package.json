@@ -1,0 +1,25 @@
+{
+  "name": "@mmgfrcs/research-server",
+  "version": "1.0.0",
+  "description": "A server for collecting, aggregating, and summarizing research data",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha ."
+  },
+  "keywords": [
+    "research",
+    "server"
+  ],
+  "repository": {
+    "url": "https://github.com/mmgfrcs/research-server",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/mmgfrcs/research-server/issues"
+  },
+  "author": "mmgfrcs",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^7.2.0"
+  }
+}
