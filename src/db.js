@@ -24,16 +24,28 @@ function getUserCount() {
  * @returns {object}
  */
 function findUser(name, pass) {
+    if(name === undefined) return data.researcher;
     if(pass === undefined) {
         
-        let user = data.researcher.find(val=> val == name);
+        let user = data.researcher.find(val=> val.name == name);
         if (user !== undefined) return user;
+        else return undefined;
+    }
+    else {
+
+        let user = data.researcher.find(val=> val.name == name);
+        if (user !== undefined) {
+
+            if(bcrypt.compareSync(pass, user.password) == true) return user;
+            else return undefined;
+            
+        }
         else return undefined;
     }
 }
 
 /**
- * 
+ * Add new user
  * @param {string} name The user's name.
  * @param {string} pass The user's password.
  */
