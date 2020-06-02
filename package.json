@@ -2,8 +2,9 @@
   "name": "@mmgfrcs/research-server",
   "version": "1.0.0",
   "description": "A server for collecting, aggregating, and summarizing research data",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
+    "start": "node .",
     "test": "mocha ."
   },
   "keywords": [
@@ -21,5 +22,17 @@
   "license": "MIT",
   "devDependencies": {
     "mocha": "^7.2.0"
+  },
+  "dependencies": {
+    "bcrypt": "^4.0.1",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "ejs": "^2.6.1",
+    "express": "^4.17.1",
+    "helmet": "^3.22.0",
+    "jsonwebtoken": "^8.5.1",
+    "morgan": "^1.10.0",
+    "passport": "^0.4.1",
+    "yaml": "^1.10.0"
   }
 }
