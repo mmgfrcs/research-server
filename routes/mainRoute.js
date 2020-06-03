@@ -33,9 +33,8 @@ passport.serializeUser(function(user, cb) {
 
 passport.deserializeUser(function(id, cb) {
     let desUser = db.findUser(id);
-    if(desUser !== undefined) cb(null, desUser);
-    else cb(null, false);
-    
+    cb(null, desUser);
+
 });
 
 router.use(session({ secret: 'res-srv', resave: true, saveUninitialized: false }));

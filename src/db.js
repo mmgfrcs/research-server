@@ -11,6 +11,10 @@ function init() {
     data.researcher = [];
     data.researches = [];
 }
+
+function getUserCount() {
+    return data.researcher.length;
+}
 /**
  * Find users or research data in the database
  * @param {string} name The user's name to find
@@ -171,6 +175,6 @@ function deleteResearch(name){
 }
 
 module.exports = {
-    init, getUsers, findUser, insertUser, updateUser, deleteUser, getResearches, 
+    init, getUserCount, getUsers, findUser, insertUser, updateUser, deleteUser, getResearches, 
     insertResearch, findResearch, insertResearchData, renameResearch, deleteResearch
 };
