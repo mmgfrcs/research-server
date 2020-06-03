@@ -1,0 +1,42 @@
+
+name: Node.js Per-Commit Test
+
+on:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  test:
+    name: Test Application
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setting up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install Packages
+      run: npm ci
+    - name: Lint Action
+      uses: samuelmeuli/lint-action@v1.5
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        eslint: true
+    - name: Start Test and Check Coverage
+      run: npm test
+    - name: Check coverage percentage
+      continue-on-error: true
+      uses: devmasx/coverage-check-action@v1.1.0
+      with:
+        type: lcov
+        result_path: ./coverage/lcov.info
+        min_coverage: 90
+        token: ${{secrets.GITHUB_TOKEN}}
+    - name: Upload coverage
+      uses: codecov/codecov-action@v1.0.7
+      with:
+        file: ./coverage/lcov.info # optional

@@ -32,12 +32,9 @@ passport.serializeUser(function(user, cb) {
 
 passport.deserializeUser(function(id, cb) {
     let desUser = db.findUser(id);
-    if(desUser !== undefined) {
-        cb(null, desUser);
-    }
-    else {
-        cb(null, false);
-    }
+    if(desUser !== undefined) cb(null, desUser);
+    else cb(null, false);
+    
 });
 
 router.use(session({ secret: 'res-srv', resave: true, saveUninitialized: false }));
@@ -46,7 +43,7 @@ router.use(passport.session());
 router.use(flash());
 
 //Get config
-const file = fs.readFileSync('./config/config.yml', 'utf8')
+const file = fs.readFileSync('./config/config.yml', 'utf8');
 config = yaml.parse(file);
 
 router.use(express.static("public"));
@@ -56,13 +53,14 @@ router.get("/", (req, res) => {
         title: config.serverName,
         firstStart: db.getUserCount > 0,
         user: req.user,
+        userList: db.getUsers(req.user),
         loginFail: req.query.login || false
     });
-})
+});
 
 router.post("/login", passport.authenticate('local', {failureRedirect: "/", failureFlash: true}), (req, res) => {
     res.redirect("/");
-})
+});
 
 router.get("/logout", (req, res) => {
     req.logout();
@@ -77,6 +75,6 @@ router.get("/generate", (req, res) => {
         res.redirect("/");
     }
     else res.sendStatus(400);
-})
+});
 
 module.exports = router;

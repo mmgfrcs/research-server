@@ -1,16 +1,19 @@
 {
   "name": "@mmgfrcs/research-server",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A server for collecting, aggregating, and summarizing research data",
   "main": "app.js",
   "scripts": {
     "start": "node .",
-    "test": "mocha ."
+    "test": "./node_modules/.bin/nyc --reporter=lcovonly --reporter=text ./node_modules/.bin/mocha --exit"
   },
   "keywords": [
     "research",
     "server"
   ],
+  "engines": {
+    "node": "12.16.3"
+  },
   "repository": {
     "url": "https://github.com/mmgfrcs/research-server",
     "type": "git"
@@ -21,7 +24,11 @@
   "author": "mmgfrcs",
   "license": "MIT",
   "devDependencies": {
-    "mocha": "^7.2.0"
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "eslint": "^7.1.0",
+    "mocha": "^7.2.0",
+    "nyc": "^15.1.0"
   },
   "dependencies": {
     "bcrypt": "^4.0.1",

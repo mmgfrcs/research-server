@@ -1,4 +1,4 @@
-let bcrypt = require("bcrypt")
+let bcrypt = require("bcrypt");
 
 let data = {
     researcher: [],
@@ -8,13 +8,6 @@ let data = {
 function init() {
     data.researcher = [];
     data.resData = [];
-}
-
-/**
- * Get the number of users on the database
- */
-function getUserCount() {
-    return data.researcher.length;
 }
 
 /**
@@ -48,8 +41,9 @@ function findUser(name, pass) {
  * Add new user
  * @param {string} name The user's name.
  * @param {string} pass The user's password.
+ * @param {boolean} admin whether this user should be the admin of the site.
  */
-function insertUser(name, pass) {
+function insertUser(name, pass, admin) {
     bcrypt.hash(pass, 10, function(err, hash) {
         if(err) {
             console.error(err);
@@ -59,8 +53,9 @@ function insertUser(name, pass) {
             name: name,
             password: hash,
             clientId: "",
-            clientSecret: ""
-        })
+            clientSecret: "",
+            permission: admin == true ? 2 : 0
+        });
     });
 }
 
@@ -89,7 +84,7 @@ function updateUser(name, updateData) {
             if(updateData.name !== undefined) data.researcher[userIdx].name = updateData.name;
             if(updateData.clientId !== undefined) data.researcher[userIdx].clientId = updateData.clientId;
             if(updateData.clientSecret !== undefined) data.researcher[userIdx].clientSecret = updateData.clientSecret;
-        })
+        });
     }
     else {
         if(updateData.name !== undefined) data.researcher[userIdx].name = updateData.name;
@@ -99,6 +94,12 @@ function updateUser(name, updateData) {
     
 }
 
-module.exports = {
-    init, getUserCount, findUser, insertUser, updateUser
+function getUsers(callingUser) {
+    if(callingUser !== undefined && callingUser.permission > 0)
+        return data.researcher;
+    else return [];
 }
+
+module.exports = {
+    init, getUsers, findUser, insertUser, updateUser
+};

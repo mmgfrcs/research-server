@@ -10,7 +10,7 @@ let fs = require("fs");
 
 //Routes and Scripts
 let db = require("./src/db");
-let resData = require("./routes/resData");
+//let resData = require("./routes/resData");
 let researchers = require("./routes/researchers");
 let mainRoute = require("./routes/mainRoute");
 
@@ -19,8 +19,8 @@ db.init();
 let app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-const file = fs.readFileSync('./config/config.yml', 'utf8')
-config = yaml.parse(file);
+const file = fs.readFileSync('./config/config.yml', 'utf8');
+let config = yaml.parse(file);
 if(config.preconfigure == true) {
     let username = Date.now();
     let userpass = "pass";
@@ -33,7 +33,7 @@ app.use(helmet({hsts: {maxAge: 900}}));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(cors());
-app.use(morgan("tiny"));
+if(process.env.NODE_ENV == "development") app.use(morgan("tiny"));
 
 //app.use("/api/data", resData);
 app.use("/api/researcher", researchers);
@@ -41,4 +41,6 @@ app.use("/", mainRoute);
 
 app.listen(3000, () => {
     console.log("Server started");
-})
+});
+
+module.exports = app;
