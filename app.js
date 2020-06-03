@@ -3,7 +3,6 @@ let express = require("express");
 let bodyparser = require("body-parser");
 let helmet = require("helmet");
 let cors = require("cors");
-let morgan = require("morgan");
 let path = require("path");
 let yaml = require("yaml");
 let fs = require("fs");
@@ -24,7 +23,7 @@ let config = yaml.parse(file);
 if(config.preconfigure == true) {
     let username = Date.now();
     let userpass = "pass";
-    db.insertUser(username, userpass);
+    db.insertUser(username, userpass, true);
     console.log("Preconfigure: User " + username + ", password " + userpass);
 }
 
@@ -33,7 +32,6 @@ app.use(helmet({hsts: {maxAge: 900}}));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(cors());
-if(process.env.NODE_ENV == "development") app.use(morgan("tiny"));
 
 //app.use("/api/data", resData);
 app.use("/api/researcher", researchers);

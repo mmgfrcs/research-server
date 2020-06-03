@@ -27,6 +27,11 @@
       <% } %>
       <% if (!user) { %>
       <div class="row">
+        <div class="col">
+          <h2>Login</h2>
+        </div>
+      </div>
+      <div class="row">
           <form class="col" method="POST" action="/login">
             <div class="row">
               <div class="form-group col">
@@ -37,7 +42,6 @@
               <div class="form-group col">
                 <label for="password">Password</label>
                 <input name="password" id="password" type="text" class="form-control">
-
               </div>
             </div>
             <div class="row">
@@ -48,13 +52,15 @@
           </form>
       </div>
       <% } else { %>
-        <div class="row">
+        <div class="row" id="welcome">
           <div class="col mr-md-auto">
             <span class="align-bottom h4">Welcome, <%= user.name %></span>
-            
           </div>
           <div class="col-auto">
-              <a class="btn btn-primary" href="/logout">Logout</a>
+            <% if (user.permission != 2 || (user.permission == 2 && userList.filter((val) => val.permission == 2).length > 1)) { %>
+              <a class="btn btn-danger" href="#">Delete Account</a>
+            <% } %>
+            <a class="btn btn-primary" href="/logout">Logout</a>
           </div>
         </div>
         <hr/>
@@ -83,7 +89,77 @@
             <a class="btn btn-primary btn-block" type="button" href="/generate">Revoke and Regenerate</a>
           </div>
         </div>
-        
+        <% if (user.permission == 2) { %>
+          <hr/>
+          <!--Navigation-->
+          <div class="row">
+            <div class="col">
+              <ul class="nav nav-justified">
+                <li class="nav-item">
+                  <a class="nav-link active" href="#researcherList">Active</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <!--End Navigation-->
+          <hr/>
+          <!--Researcher List-->
+          <div class="row" id="researcherList">
+            <div class="col">
+              <h2>Researchers</h2>
+              <p><%= userList.length %> entries</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <table class="table table-hover">
+                <thead class="thead-dark">
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Client ID</th>
+                    <th scope="col">Client Secret</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% for( let idx = 0; idx < userList.length; idx++ ) { %>
+                    <tr>
+                      <th scope="row"><%= idx + 1 %></th>
+                      <td><%= userList[idx].name %></td>
+                      <% if (userList[idx].clientId != "") { %>
+                        <td class="text-break"><%= userList[idx].clientId %></td>
+                      <% } else { %>
+                        <td>-</td>
+                      <% } %> 
+                      <% if (userList[idx].clientSecret != "") { %>
+                        <td class="text-break"><%= userList[idx].clientSecret %></td>
+                      <% } else { %>
+                        <td>-</td>
+                      <% } %>
+                      <td><a class="btn btn-primary" href="#">Test</a></td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="row" id="researcherList">
+            <div class="col">
+              <a href="#welcome">Back to Top</a>
+            </div>
+          </div>
+          <!--End Researcher List-->
+        <% } %>
       <% } %>
     </div>
 

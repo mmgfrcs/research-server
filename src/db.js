@@ -9,7 +9,6 @@ function init() {
     data.researcher = [];
     data.resData = [];
 }
-
 /**
  * Find users or research data in the database
  * @param {string} name The user's name to find
@@ -95,7 +94,7 @@ function updateUser(name, updateData) {
 }
 
 function getUsers(callingUser) {
-    if(callingUser !== undefined && callingUser.permission > 0)
+    if(callingUser !== undefined && callingUser.permission == 2)
         return data.researcher;
     else return [];
 }

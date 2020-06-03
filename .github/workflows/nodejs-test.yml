@@ -23,20 +23,14 @@ jobs:
       run: npm ci
     - name: Lint Action
       uses: samuelmeuli/lint-action@v1.5.3
+      if: matrix.node-version == 12.x
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         eslint: true
     - name: Start Test and Check Coverage
       run: npm test
-    - name: Check coverage percentage
-      continue-on-error: true
-      uses: devmasx/coverage-check-action@v1.1.0
-      with:
-        type: lcov
-        result_path: ./coverage/lcov.info
-        min_coverage: 90
-        token: ${{secrets.GITHUB_TOKEN}}
     - name: Upload coverage
       uses: codecov/codecov-action@v1.0.7
+      if: matrix.node-version == 12.x
       with:
         file: ./coverage/lcov.info # optional
