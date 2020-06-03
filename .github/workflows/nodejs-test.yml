@@ -22,7 +22,7 @@ jobs:
     - name: Install Packages
       run: npm ci
     - name: Lint Action
-      uses: samuelmeuli/lint-action@v1.5
+      uses: samuelmeuli/lint-action@v1.5.3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         eslint: true
