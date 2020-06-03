@@ -65,7 +65,8 @@ router.get("/", (req, res) => {
 
 router.post("/researcher", [
     check("name").isLength({min: 4}).escape(),
-    check("password").isLength({min: 6}).escape()
+    check("password").isLength({min: 6}).escape(),
+    check("permLvl").isInt({min: 0, max: 2})
 ], async (req, res) => {
     let errors = validationResult(req);
     if(!req.user) req.flash("error","Not logged in. Please login to continue");
@@ -73,12 +74,32 @@ router.post("/researcher", [
     else if(!errors.isEmpty()) req.flash("error", "Input error. Make sure that the name is at least 4 characters long and the password is at least 6 characters long.");
     else {
         try {
-            await db.insertUser(req.body.name, req.body.password, req.body.tokengen || false);
+            await db.insertUser(req.body.name, req.body.password, req.body.tokengen || false, req.body.permLvl == 2);
+            if(req.body.permLvl == 1) db.updateUser(req.body.name, {permission: 1});
             req.flash("success","Researcher added");
         }
         catch(err) {
             console.error(err);
-            req.flash("error", "Error in adding user: " + err.message);
+            req.flash("error", "Error in adding researcher: " + err.message);
+        }
+    }
+    res.redirect('/');
+});
+
+router.post("/research", [
+    check("name").isLength({min: 4}).escape()
+], async (req, res) => {
+    let errors = validationResult(req);
+    if(!req.user) req.flash("error","Not logged in. Please login to continue");
+    else if(!errors.isEmpty()) req.flash("error", "Input error. Make sure that the name is at least 4 characters long.");
+    else {
+        try {
+            await db.insertResearch(req.body.name, req.user.name);
+            req.flash("success","Research added");
+        }
+        catch(err) {
+            console.error(err);
+            req.flash("error", "Error in adding research: " + err.message);
         }
     }
     res.redirect('/');

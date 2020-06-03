@@ -23,7 +23,7 @@ let config = yaml.parse(file);
 if(config.preconfigure == true) {
     let username = Date.now();
     let userpass = "pass";
-    db.insertUser(username, userpass, false, true);
+    db.insertUser(username, userpass, true, true);
     console.log("Preconfigure: User " + username + ", password " + userpass);
 }
 

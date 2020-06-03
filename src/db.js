@@ -92,16 +92,12 @@ function updateUser(name, updateData) {
                 return;
             }
             data.researcher[userIdx].password = hash;
-            if(updateData.name !== undefined) data.researcher[userIdx].name = updateData.name;
-            if(updateData.token !== undefined) data.researcher[userIdx].token = updateData.token;
-            if(updateData.secret !== undefined) data.researcher[userIdx].secret = updateData.secret;
         });
     }
-    else {
-        if(updateData.name !== undefined) data.researcher[userIdx].name = updateData.name;
-        if(updateData.token !== undefined) data.researcher[userIdx].token = updateData.token;
-        if(updateData.secret !== undefined) data.researcher[userIdx].secret = updateData.secret;
-    }
+    if(updateData.name !== undefined) data.researcher[userIdx].name = updateData.name;
+    if(updateData.permission !== undefined) data.researcher[userIdx].permission = updateData.permission;
+    if(updateData.token !== undefined) data.researcher[userIdx].token = updateData.token;
+    if(updateData.secret !== undefined) data.researcher[userIdx].secret = updateData.secret;
     
 }
 
@@ -125,22 +121,25 @@ function getResearches() {
 }
 
 function findResearch(nameOrResId) {
-    let rs = data.researcher.find(val=> val.name == nameOrResId);
-    if(rs === undefined) return data.researcher.find(val=> val.researchId == nameOrResId);
+    let rs = data.researches.find(val=> val.name == nameOrResId);
+    if(rs === undefined) return data.researches.find(val=> val.researchId == nameOrResId);
     return rs;
 }
 
 function insertResearch(name, ...researchers) {
-    bcrypt.hash(name, 10, function(err, hash) {
-        if(err) {
-            console.error(err);
-            return;
-        }
-        data.researches.push({
-            name: name,
-            researchers: researchers,
-            researchId: hash,
-            data: []
+    return new Promise((resolve, reject)=>{
+        if(data.researches.find(x=>x.name == name) !== undefined) return reject(new Error("Research with that name already exists"));
+        bcrypt.hash(name, 10, function(err, hash) {
+            if(err) return reject(err);
+
+            data.researches.push({
+                name: name,
+                researchers: researchers,
+                researchId: hash,
+                data: []
+            });
+
+            resolve();
         });
     });
 }

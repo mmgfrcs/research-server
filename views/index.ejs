@@ -143,6 +143,10 @@
               </div>
             </div>
             <div class="form-group">
+              <label for="permLvl">Permission Level</label>
+              <input class="form-control" type="number" min="0" max="2" name="permLvl" id="permLvl" value="0">
+            </div>
+            <div class="form-group">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="token-gen" name="tokengen">
                 <label class="form-check-label" for="token-gen">Generate Token Immediately</label>
@@ -154,6 +158,7 @@
               </div>
             </div>
           </form>
+          <!--End Add new form-->
           <div class="row">
             <div class="col">
               <table class="table table-hover">
@@ -161,6 +166,7 @@
                   <tr>
                     <th scope="col">#</th>
                     <th scope="col">Name</th>
+                    <th scope="col">Permission Level</th>
                     <th scope="col">Token</th>
                     <th scope="col">Secret</th>
                     <th scope="col">Actions</th>
@@ -171,6 +177,7 @@
                     <tr>
                       <th scope="row"><%= idx + 1 %></th>
                       <td><%= userList[idx].name %></td>
+                      <td><%= userList[idx].permission %></td>
                       <% if (userList[idx].token != "") { %>
                         <td class="text-break"><%= userList[idx].token %></td>
                       <% } else { %>
@@ -182,9 +189,12 @@
                         <td>-</td>
                       <% } %>
                       <td>
-                        <a class="btn btn-primary m-1" href="#">Rename</a>
-                        <a class="btn btn-warning m-1" href="#">Regenerate</a>
-                        <a class="btn btn-danger m-1" href="#">Delete</a>
+                        <% if (userList[idx].name != user.name) { %>
+                          <a class="btn btn-primary m-1" href="#">Rename</a>
+                          <a class="btn btn-warning m-1" href="#">Regenerate</a>
+                          <a class="btn btn-danger m-1" href="#">Delete</a>
+                        <% } %>
+                        
                       </td>
                     </tr>
                   <% } %>
@@ -199,65 +209,83 @@
           </div>
           <!--End Researcher List-->
         <% } %>
-        <% if (user.permission > 0) { %>
-          <hr/>
-          <!--Research List-->
-          <div class="row" id="researchList">
-            <div class="col">
-              <h2>Research List</h2>
-              <p><%= researches.length %> entries</p>
-            </div>
+        <hr/>
+        <!--Research List-->
+        <div class="row" id="researchList">
+          <div class="col">
+            <h2>Research List</h2>
+            <p><%= researches.length %> entries</p>
           </div>
-          <div class="row mb-2">
-            <div class="col">
-              <a class="btn btn-primary" href="#">Add New</a>
-            </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col">
+            <span class="btn btn-primary" id="new-research">Add New</a>
           </div>
+        </div>
+        <!--Add New form-->
+        <form class="form d-none mb-2" method="POST" action="/research" id="new-research-form">
           <div class="row">
             <div class="col">
-              <table class="table table-hover">
-                <thead class="thead-dark">
+              <h5>New Research</h5>
+            </div>
+          </div>
+          <div class="form-row form-group">
+            <div class="col">
+              <input class="form-control" type="text" placeholder="Research Name" name="name">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <button type="submit" class="btn btn-primary btn-block">Add</button>
+            </div>
+          </div>
+        </form>
+        <!--End Add new form-->
+        <div class="row">
+          <div class="col">
+            <table class="table table-hover">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Research ID</th>
+                  <th scope="col">Researchers</th>
+                  <th scope="col">No. of Data</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% let resdata = user.permission > 0 ? researches : researches.filter(val => val.researchers.includes(user.name)) %> 
+                <% for( let idx = 0; idx < resdata.length; idx++ ) { %>
                   <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Research ID</th>
-                    <th scope="col">Researchers</th>
-                    <th scope="col">No. of Data</th>
-                    <th scope="col">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% for( let idx = 0; idx < researches.length; idx++ ) { %>
-                    <tr>
-                      <th scope="row"><%= idx + 1 %></th>
-                      <td><%= researches[idx].name %></td>
-                      <td class="text-break"><%= researches[idx].researchId %></td>
+                    <th scope="row"><%= idx + 1 %></th>
+                    <td><%= researches[idx].name %></td>
+                    <td class="text-break"><%= researches[idx].researchId %></td>
 
-                      <% if (researches[idx].researchers != "") { %>
-                        <td class="text-break"><%= researches[idx].researchers.join(', ') %></td>
-                      <% } else { %>
-                        <td>-</td>
-                      <% } %>
-                      <td><%= researches[idx].data.length %></td>
-                      <td>
-                        <a class="btn btn-primary m-1" href="#">Rename</a>
-                        <a class="btn btn-warning m-1" href="#">Add Researcher</a>
-                        <a class="btn btn-danger m-1" href="#">Remove Researcher</a>
-                        <a class="btn btn-danger m-1" href="#">Delete</a>
-                      </td>
-                    </tr>
-                  <% } %>
-                </tbody>
-              </table>
-            </div>
+                    <% if (researches[idx].researchers != "") { %>
+                      <td class="text-break"><%= researches[idx].researchers.join(', ') %></td>
+                    <% } else { %>
+                      <td>-</td>
+                    <% } %>
+                    <td><%= researches[idx].data.length %></td>
+                    <td>
+                      <a class="btn btn-primary m-1" href="#">Rename</a>
+                      <a class="btn btn-warning m-1" href="#">Add Researcher</a>
+                      <a class="btn btn-danger m-1" href="#">Remove Researcher</a>
+                      <a class="btn btn-danger m-1" href="#">Delete</a>
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
           </div>
-          <div class="row">
-            <div class="col">
-              <a href="#welcome">Back to Top</a>
-            </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <a href="#welcome">Back to Top</a>
           </div>
-          <!--End Research List-->
-        <% } %>
+        </div>
+        <!--End Research List-->
       <% } %>
     </div>
 
