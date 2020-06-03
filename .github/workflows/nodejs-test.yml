@@ -23,7 +23,7 @@ jobs:
       run: npm ci
     - name: Lint Action
       uses: samuelmeuli/lint-action@v1.5.3
-      if: matrix.node-version == 12.x
+      if: startsWith(matrix.node-version, '12')
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         eslint: true
@@ -31,6 +31,6 @@ jobs:
       run: npm test
     - name: Upload coverage
       uses: codecov/codecov-action@v1.0.7
-      if: matrix.node-version == 12.x
+      if: startsWith(matrix.node-version, '12')
       with:
         file: ./coverage/lcov.info # optional

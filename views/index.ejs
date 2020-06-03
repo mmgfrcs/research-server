@@ -6,7 +6,6 @@
     <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"> 
-    <!--Import materialize.css-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel='stylesheet' href='css/main.css' />
     <meta charset="utf-8"/>
@@ -25,32 +24,39 @@
           <%= messages.error %> 
         </div>
       <% } %>
-      <% if (!user) { %>
-      <div class="row">
-        <div class="col">
-          <h2>Login</h2>
+      <% if (messages.success) { %>
+        <div class="alert alert-success" role="alert">
+          <%= messages.success %> 
         </div>
-      </div>
-      <div class="row">
-          <form class="col" method="POST" action="/login">
-            <div class="row">
-              <div class="form-group col">
-                <label for="username">Name</label>
-                <input name="username" id="username" type="text" class="form-control">
+      <% } %>
+      <% if (!user) { %>
+        <!--Login Form-->
+        <div class="row">
+          <div class="col">
+            <h2>Login</h2>
+          </div>
+        </div>
+        <div class="row">
+            <form class="col" method="POST" action="/login">
+              <div class="row">
+                <div class="form-group col">
+                  <label for="username">Name</label>
+                  <input name="username" id="username" type="text" class="form-control">
 
+                </div>
+                <div class="form-group col">
+                  <label for="password">Password</label>
+                  <input name="password" id="password" type="password" class="form-control">
+                </div>
               </div>
-              <div class="form-group col">
-                <label for="password">Password</label>
-                <input name="password" id="password" type="text" class="form-control">
+              <div class="row">
+                <div class="col s12">
+                  <button class="btn btn-primary btn-block" type="submit" name="action">Login</button>
+                </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col s12">
-                <button class="btn btn-primary btn-block" type="submit" name="action">Login</button>
-              </div>
-            </div>
-          </form>
-      </div>
+            </form>
+        </div>
+        <!--End Login-->
       <% } else { %>
         <div class="row" id="welcome">
           <div class="col mr-md-auto">
@@ -66,10 +72,10 @@
         <hr/>
         <div class="row">
           <div class="col-6">
-            <div><b>Client ID</b></div>
-            <small class="text-muted">This is the ID you use to access the API</small>
-            <% if (user.clientId != "") { %>
-              <p class="text-break"><%= user.clientId %></p>
+            <div><b>Access Token</b></div>
+            <small class="text-muted">This is the token you use to access the API</small>
+            <% if (user.token != "") { %>
+              <p class="text-break"><%= user.token %></p>
             <% } else { %>
               <p>-Not Generated Yet-</p>
             <% } %> 
@@ -77,8 +83,8 @@
           <div class="col-6">
             <div><b>Client Secret</b></div>
             <small class="text-muted">This is what you'll send in the Authorization header when connecting to the API</small>
-            <% if (user.clientSecret != "") { %>
-              <p class="text-break"><%= user.clientSecret %></p>
+            <% if (user.secret != "") { %>
+              <p class="text-break"><%= user.secret %></p>
             <% } else { %>
               <p>-Not Generated Yet-</p>
             <% } %> 
@@ -94,18 +100,15 @@
           <!--Navigation-->
           <div class="row">
             <div class="col">
-              <ul class="nav nav-justified">
+              <ul class="nav nav-justified nav-pills">
                 <li class="nav-item">
-                  <a class="nav-link active" href="#researcherList">Active</a>
+                  <a class="nav-link" href="#welcome">Welcome</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Link</a>
+                  <a class="nav-link" href="#researcherList">Researcher List</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Link</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                  <a class="nav-link" href="#researchList">Research List</a>
                 </li>
               </ul>
             </div>
@@ -115,8 +118,99 @@
           <!--Researcher List-->
           <div class="row" id="researcherList">
             <div class="col">
-              <h2>Researchers</h2>
+              <h2>Researcher List</h2>
               <p><%= userList.length %> entries</p>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col">
+              <span class="btn btn-primary" id="new-user">Add New</a>
+            </div>
+          </div>
+          <!--Add New form-->
+          <form class="form d-none mb-2" method="POST" action="/researcher" id="new-user-form">
+            <div class="row">
+              <div class="col">
+                <h5>New Researcher</h5>
+              </div>
+            </div>
+            <div class="form-row form-group">
+              <div class="col">
+                <input class="form-control" type="text" placeholder="Name" name="name">
+              </div>
+              <div class="col">
+                <input class="form-control" type="password" placeholder="User Password" name="password">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="token-gen" name="tokengen">
+                <label class="form-check-label" for="token-gen">Generate Token Immediately</label>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col">
+                <button type="submit" class="btn btn-primary btn-block">Add</button>
+              </div>
+            </div>
+          </form>
+          <div class="row">
+            <div class="col">
+              <table class="table table-hover">
+                <thead class="thead-dark">
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Token</th>
+                    <th scope="col">Secret</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% for( let idx = 0; idx < userList.length; idx++ ) { %>
+                    <tr>
+                      <th scope="row"><%= idx + 1 %></th>
+                      <td><%= userList[idx].name %></td>
+                      <% if (userList[idx].token != "") { %>
+                        <td class="text-break"><%= userList[idx].token %></td>
+                      <% } else { %>
+                        <td>-</td>
+                      <% } %> 
+                      <% if (userList[idx].secret != "") { %>
+                        <td class="text-break"><%= userList[idx].secret %></td>
+                      <% } else { %>
+                        <td>-</td>
+                      <% } %>
+                      <td>
+                        <a class="btn btn-primary m-1" href="#">Rename</a>
+                        <a class="btn btn-warning m-1" href="#">Regenerate</a>
+                        <a class="btn btn-danger m-1" href="#">Delete</a>
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <a href="#welcome">Back to Top</a>
+            </div>
+          </div>
+          <!--End Researcher List-->
+        <% } %>
+        <% if (user.permission > 0) { %>
+          <hr/>
+          <!--Research List-->
+          <div class="row" id="researchList">
+            <div class="col">
+              <h2>Research List</h2>
+              <p><%= researches.length %> entries</p>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col">
+              <a class="btn btn-primary" href="#">Add New</a>
             </div>
           </div>
           <div class="row">
@@ -126,39 +220,43 @@
                   <tr>
                     <th scope="col">#</th>
                     <th scope="col">Name</th>
-                    <th scope="col">Client ID</th>
-                    <th scope="col">Client Secret</th>
+                    <th scope="col">Research ID</th>
+                    <th scope="col">Researchers</th>
+                    <th scope="col">No. of Data</th>
                     <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <% for( let idx = 0; idx < userList.length; idx++ ) { %>
+                  <% for( let idx = 0; idx < researches.length; idx++ ) { %>
                     <tr>
                       <th scope="row"><%= idx + 1 %></th>
-                      <td><%= userList[idx].name %></td>
-                      <% if (userList[idx].clientId != "") { %>
-                        <td class="text-break"><%= userList[idx].clientId %></td>
-                      <% } else { %>
-                        <td>-</td>
-                      <% } %> 
-                      <% if (userList[idx].clientSecret != "") { %>
-                        <td class="text-break"><%= userList[idx].clientSecret %></td>
+                      <td><%= researches[idx].name %></td>
+                      <td class="text-break"><%= researches[idx].researchId %></td>
+
+                      <% if (researches[idx].researchers != "") { %>
+                        <td class="text-break"><%= researches[idx].researchers.join(', ') %></td>
                       <% } else { %>
                         <td>-</td>
                       <% } %>
-                      <td><a class="btn btn-primary" href="#">Test</a></td>
+                      <td><%= researches[idx].data.length %></td>
+                      <td>
+                        <a class="btn btn-primary m-1" href="#">Rename</a>
+                        <a class="btn btn-warning m-1" href="#">Add Researcher</a>
+                        <a class="btn btn-danger m-1" href="#">Remove Researcher</a>
+                        <a class="btn btn-danger m-1" href="#">Delete</a>
+                      </td>
                     </tr>
                   <% } %>
                 </tbody>
               </table>
             </div>
           </div>
-          <div class="row" id="researcherList">
+          <div class="row">
             <div class="col">
               <a href="#welcome">Back to Top</a>
             </div>
           </div>
-          <!--End Researcher List-->
+          <!--End Research List-->
         <% } %>
       <% } %>
     </div>
@@ -167,5 +265,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>

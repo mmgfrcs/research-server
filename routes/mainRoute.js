@@ -1,13 +1,14 @@
-let express = require("express");
-let yaml = require("yaml");
-let fs = require("fs");
-let passport = require("passport");
-let db = require("../src/db");
-let session = require("express-session");
-let flash = require("express-flash");
-let LocalStrategy = require("passport-local").Strategy;
-let jwt = require("jsonwebtoken");
-let crypto = require("crypto");
+const express = require("express");
+const yaml = require("yaml");
+const fs = require("fs");
+const passport = require("passport");
+const db = require("../src/db");
+const session = require("express-session");
+const flash = require("express-flash");
+const LocalStrategy = require("passport-local").Strategy;
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { check, validationResult } = require('express-validator');
 
 let router = express.Router();
 let config = undefined;
@@ -49,16 +50,55 @@ config = yaml.parse(file);
 router.use(express.static("public"));
 
 router.get("/", (req, res) => {
+    let researches = [];
+    if(req.user !== undefined && req.user.permission > 0) researches = db.getResearches();
+    else researches = db.getResearches().filter(val => val.name == req.user.name);
     res.render("index", {
         title: config.serverName,
         firstStart: db.getUserCount > 0,
         user: req.user,
         userList: db.getUsers(req.user),
+        researches: researches,
         loginFail: req.query.login || false
     });
 });
 
-router.post("/login", passport.authenticate('local', {failureRedirect: "/", failureFlash: true}), (req, res) => {
+router.post("/researcher", [
+    check("name").isLength({min: 4}).escape(),
+    check("password").isLength({min: 6}).escape()
+], async (req, res) => {
+    let errors = validationResult(req);
+    if(!req.user) req.flash("error","Not logged in. Please login to continue");
+    else if (req.user.permission != 2) req.flash("error","Not enough permisson to do this action");
+    else if(!errors.isEmpty()) req.flash("error", "Input error. Make sure that the name is at least 4 characters long and the password is at least 6 characters long.");
+    else {
+        try {
+            await db.insertUser(req.body.name, req.body.password, req.body.tokengen || false);
+            req.flash("success","Researcher added");
+        }
+        catch(err) {
+            console.error(err);
+            req.flash("error", "Error in adding user: " + err.message);
+        }
+    }
+    res.redirect('/');
+});
+
+router.get("/research/:researchId", (req, res) => {
+    if(!req.user) {
+        req.flash("error","Not logged in. Please login to continue");
+        return res.redirect("/");
+    }
+    res.render("research", {
+        title: config.serverName,
+        researchObj: db.findResearch(req.query.researchId)
+    });
+});
+
+router.post("/login", [
+    check("username").escape(),
+    check("password").escape()
+], passport.authenticate('local', {failureRedirect: "/", failureFlash: true}), (req, res) => {
     res.redirect("/");
 });
 
@@ -69,12 +109,13 @@ router.get("/logout", (req, res) => {
 
 router.get("/generate", (req, res) => {
     if(req.user) {
-        let id = crypto.randomBytes(16).toString('hex');
-        let sec = jwt.sign(req.user.name, id);
-        db.updateUser(req.user.name, {clientId: id, clientSecret: sec});
+        let sec = crypto.randomBytes(20).toString('hex');
+        let token = jwt.sign(req.user.name, sec);
+        db.updateUser(req.user.name, {token: token, secret: sec});
         res.redirect("/");
     }
     else res.sendStatus(400);
 });
+
 
 module.exports = router;
