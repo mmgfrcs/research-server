@@ -28,6 +28,8 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         eslint: true
     - name: Start Test and Check Coverage
+      env:
+        MONGODB_URI: ${{ secrets. MONGODB_URI }}
       run: npm test
     - name: Upload coverage
       uses: codecov/codecov-action@v1.0.7

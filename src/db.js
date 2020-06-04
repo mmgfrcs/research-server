@@ -52,12 +52,19 @@ function findUser(predicate) {
     return Researcher.findOne(predicate).lean().exec();
 }
 
-function verifyUser(name, password) {
-    return findUser({name: name}).then((user) => {
-        return bcrypt.compare(password, user.password);
-    }).then(verified => {
-        return verified;
-    });
+function verifyUser(nameOrSecret, password) {
+    if(password !== undefined) {
+        return findUser({name: nameOrSecret}).then((user) => {
+            return bcrypt.compare(password, user.password);
+        }).then(verified => {
+            return verified;
+        });
+    }
+    else {
+        return findUser({secret: nameOrSecret}).then((user) => {
+            return user !== null;
+        });
+    }
 }
 
 /**
