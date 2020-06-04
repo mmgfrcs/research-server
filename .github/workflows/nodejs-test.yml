@@ -10,20 +10,16 @@ jobs:
   test:
     name: Test Application
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x, 12.x, 14.x]
     steps:
     - uses: actions/checkout@v2
     - name: Setting up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: '12'
     - name: Install Packages
       run: npm ci
     - name: Lint Action
       uses: samuelmeuli/lint-action@v1.5.3
-      if: startsWith(matrix.node-version, '12')
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         eslint: true
@@ -33,6 +29,6 @@ jobs:
       run: npm test
     - name: Upload coverage
       uses: codecov/codecov-action@v1.0.7
-      if: always() && startsWith(matrix.node-version, '12')
+      if: always()
       with:
         file: ./coverage/lcov.info # optional
