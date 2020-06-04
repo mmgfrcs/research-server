@@ -28,12 +28,11 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         eslint: true
     - name: Start Test and Check Coverage
-      continue-on-error: true
       env:
         MONGODB_URI: ${{ secrets. MONGODB_URI }}
       run: npm test
     - name: Upload coverage
       uses: codecov/codecov-action@v1.0.7
-      if: startsWith(matrix.node-version, '12')
+      if: always() && startsWith(matrix.node-version, '12')
       with:
         file: ./coverage/lcov.info # optional

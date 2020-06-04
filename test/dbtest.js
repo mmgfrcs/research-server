@@ -85,7 +85,7 @@ describe("Database Research Insertion", function() {
         }).then(res=> {
             resId = res.researchId;
             expect(res).to.be.instanceOf(Object).with.property("name", "research1");
-            expect(res).to.have.property("researcher").with.lengthOf(1);
+            expect(res).to.have.property("researchers").with.lengthOf(1);
         });
     });
     it("Cannot insert duplicate data", function() {
