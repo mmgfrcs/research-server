@@ -10,7 +10,7 @@ const logger = require("./src/logger");
 
 //Routes and Scripts
 const db = require("./src/db");
-//let resData = require("./routes/resData");
+let resData = require("./routes/resData");
 //const researchers = require("./routes/researchers");
 const mainRoute = require("./routes/mainRoute");
 
@@ -20,24 +20,16 @@ let app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 db.init().then(() => {
+    let username = "admin";
+    let userpass = "password";
     db.getUserCount().then((userCount) => {
-        if(userCount == 0) {
-            let username = "admin";
-            let userpass = "password";
-            db.insertUser(username, userpass, true, true).then(() => {
-                logger.info("First Startup: User " + username + ", password " + userpass);
-                
-                app.listen(3000, () => {
-                    logger.info("Server started");
-                });
-            
-            });
-        }
-        else {
-            app.listen(3000, () => {
-                logger.info("Server started");
-            });
-        }
+        if(userCount == 0) return db.insertUser(username, userpass, true, true);
+        else return Promise.resolve(null);
+    }).then((val) => {
+        if(val !== null) logger.info("First Startup: User " + username + ", password " + userpass);
+        app.listen(3000, () => {
+            logger.info("Server started");
+        });
     });
 });
 
@@ -47,7 +39,7 @@ app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(cors());
 
-//app.use("/api/research", resData);
+app.use("/api/research", resData);
 //app.use("/api/researcher", researchers);
 app.use("/", mainRoute);
 
