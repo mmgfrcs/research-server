@@ -1,40 +1,63 @@
 let bcrypt = require("bcrypt");
+let mongoose = require("mongoose");
+const logger = require("./logger");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
-let data = {
-    researcher: [],
-    researches: []
-};
+//Models
+let Researcher = require("../models/researcherModel");
+let Research = require("../models/researchModel");
 
-function init() {
-    data.researcher = [];
-    data.researches = [];
-}
+let dbUri = process.env.MONGODB_URI;
 
-function getUserCount() {
-    return data.researcher.length;
-}
 /**
- * Find users or research data in the database
- * @param {string} name The user's name to find
- * @param {string} [pass] The user's password. Only supply this for authentication purposes.
- * @returns {object}
+ * Initialize the database connection
+ * @returns {Promise<void>} A Promise to wait for connection to be established.
  */
-function findUser(name, pass) {
-    if(name === undefined) return data.researcher;
-    if(pass === undefined) return data.researcher.find(val=> val.name == name);
-    else {
+function init() {
+    mongoose.set('useFindAndModify', false);
+    return mongoose.connect(dbUri, {useNewUrlParser: true, useUnifiedTopology: true}).then(()=> {
+        logger.info("MongoDB Connected");
+    }).catch((err) => {
+        logger.error(err);
+    });
+}
 
-        let user = data.researcher.find(val=> val.name == name);
-        if (user !== undefined) {
+async function getUserCount() {
+    return (await getUsers()).length;
+}
 
-            if(bcrypt.compareSync(pass, user.password) == true) return user;
-            else return undefined;
-            
-        }
-        else return undefined;
-    }
+/**
+ * @typedef UserDbData
+ * @property {string} name The user's name
+ * @property {string} password The user's password
+ * @property {string} token The user's access token
+ * @property {string} secret The user's secret
+ * @property {Number} permission The user's permission level (0-2)
+ */
+
+/**
+ * Get all users
+ * @returns {Promise<UserDbData[]>} A Promise resolving in all users returned.
+ */
+function getUsers() {
+    return Researcher.find().lean().exec();
+}
+
+/**
+ * Find a user in the database
+ * @param {UserDbData} predicate The search object to match against
+ */
+function findUser(predicate) {
+    return Researcher.findOne(predicate).lean().exec();
+}
+
+function verifyUser(name, password) {
+    return findUser({name: name}).then((user) => {
+        return bcrypt.compare(password, user.password);
+    }).then(verified => {
+        return verified;
+    });
 }
 
 /**
@@ -43,138 +66,120 @@ function findUser(name, pass) {
  * @param {string} pass The user's password.
  * @param {boolean} gentoken Whether to generate token immediately.
  * @param {boolean} admin whether this user should be the admin of the site.
- * @returns {Promise}
+ * @returns A Promise which resolves to the inserted user
  */
 function insertUser(name, pass, gentoken, admin) {
-    return new Promise((resolve, reject) => {
-        if(data.researcher.find(x=>x.name == name) !== undefined) return reject(new Error("Researcher with that name already exists"));
-        bcrypt.hash(pass, 10, function(err, hash) {
-            if(err) {
-                console.error(err);
-                return reject(err);
-            }
-            let sec = "";
-            let tok = "";
-            if(gentoken) {
-                sec = crypto.randomBytes(20).toString('hex');
-                tok = jwt.sign(name, sec);
-            }
-    
-            data.researcher.push({
-                name: name,
-                password: hash,
-                token: tok,
-                secret: sec,
-                permission: admin == true ? 2 : 0
-            });
-            resolve();
+    return findUser({name: name}).then((user) => {
+        if(user !== null) throw new Error("Researcher with that name already exists");
+        return bcrypt.hash(pass, 10);
+    }).then((hash) => {
+        let sec = "";
+        let tok = "";
+        if(gentoken) {
+            sec = crypto.randomBytes(20).toString('hex');
+            tok = jwt.sign(name, sec);
+        }
+        
+        let newUser = new Researcher({
+            name: name,
+            password: hash,
+            token: tok,
+            secret: sec,
+            permission: admin == true ? 2 : 0,
         });
+        return newUser.save();
     });
-
 }
 
 /**
- * @typedef UserDbData
- * @property {string} name 
- * @property {string} pass
- * @property {string} token
- * @property {string} secret 
- * @property {Number} permission
- */
-
-/**
- * Update user
+ * Update a user
  * @param {string} name The user's name.
  * @param {UserDbData} updateData The data object used to update the user.
  */
 function updateUser(name, updateData) {
-    let userIdx = data.researcher.findIndex(val => val.name == name);
-    if(updateData.password !== undefined) {
-        bcrypt.hash(updateData.pass, 10, function(err, hash) {
-            if(err) {
-                console.error(err);
-                return;
-            }
-            data.researcher[userIdx].password = hash;
-        });
-    }
-    if(updateData.name !== undefined) data.researcher[userIdx].name = updateData.name;
-    if(updateData.permission !== undefined) data.researcher[userIdx].permission = updateData.permission;
-    if(updateData.token !== undefined) data.researcher[userIdx].token = updateData.token;
-    if(updateData.secret !== undefined) data.researcher[userIdx].secret = updateData.secret;
-    
+    return new Promise((resolve) => {
+        if(updateData.password !== undefined) return bcrypt.hash(updateData.password, 10);
+        else return resolve(updateData.password);
+    }).then((hash) => {
+        updateData.password = hash;
+        return Researcher.findOneAndUpdate({name: name}, updateData);
+    });
 }
 
-function getUsers(callingUser) {
-    if(callingUser !== undefined && callingUser.permission == 2)
-        return data.researcher;
-    else return [];
-}
-
+/**
+ * Delete a user from the database
+ * @param {String} name The user's name to delete
+ */
 function deleteUser(name) {
-    let user = findUser(name);
-    if(user !== undefined) {
-        let idx = data.researcher.indexOf(user);
-        if (idx > -1) data.researcher.splice(idx, 1);
-        
-    }
+    return Researcher.findOneAndDelete({name: name}).exec();
 }
 
+/**
+ * @typedef ResearchDbData
+ * @property {String} name
+ * @property {String} researchId
+ * @property {String[]} researchers
+ * @property {Object[]} data
+ */
+
+/**
+ * Get all researches
+ * @returns {Promise<ResearchDbData[]>}
+ */
 function getResearches() {
-    return data.researches;
+    return Research.find().lean().exec();
 }
 
-function findResearch(nameOrResId) {
-    let rs = data.researches.find(val=> val.name == nameOrResId);
-    if(rs === undefined) return data.researches.find(val=> val.researchId == nameOrResId);
-    return rs;
+/**
+ * 
+ * @param {String} name The research name
+ * @returns {Promise<ResearchDbData>}
+ */
+function findResearchByName(name) {
+    return Research.findOne({name: name}).lean().exec();
+}
+
+function findResearchById(researchId) {
+    return Research.findOne({researchId: researchId}).lean().exec();
 }
 
 function insertResearch(name, ...researchers) {
-    return new Promise((resolve, reject)=>{
-        if(data.researches.find(x=>x.name == name) !== undefined) return reject(new Error("Research with that name already exists"));
-        bcrypt.hash(name, 10, function(err, hash) {
-            if(err) return reject(err);
-
-            data.researches.push({
-                name: name,
-                researchers: researchers,
-                researchId: hash,
-                data: []
-            });
-
-            resolve();
+    return findResearchByName(name).then((res) => {
+        if(res !== null) return Promise.reject(new Error("Research with that name already exists"));
+        let newResearch = new Research({
+            name: name,
+            researchers: researchers,
+            researchId: crypto.randomBytes(10).toString('hex'),
+            data: []
         });
+            
+        return newResearch.save();
     });
+
 }
 
 function insertResearchData(name, resData) {
-    let userIdx = data.researches.findIndex(val => val.name == name);
-    data.researches[userIdx].data.push(resData);
-}
-
-function renameResearch(name, newName) {
-    let userIdx = data.researches.findIndex(val => val.name == name);
-    bcrypt.hash(newName, 10, function(err, hash) {
-        if(err) {
-            console.error(err);
-            return;
-        }
-        data.researches[userIdx].name = name;
-        data.researches[userIdx].researchId = hash;
+    return Research.findOne({name: name}).exec().then(res => {
+        res.data.push(resData);
+        return res.save();
     });
 }
 
+function renameResearch(name, newName) {
+    return findResearchByName(name).then(res=>{
+        if(res !== null) return bcrypt.hash(newName, 10);
+        else return Promise.reject("Research with that name doesn't exist");
+    }).then(hash=> {
+        return Research.findOneAndUpdate({name: name}, {name: newName, researchId: hash}).exec();
+    });
+
+}
+
 function deleteResearch(name){
-    let user = findUser(name);
-    if(user !== undefined) {
-        let idx = data.researcher.indexOf(user);
-        if (idx > -1) data.researcher.splice(idx, 1);
-        
-    }
+    return Research.findOneAndDelete({name: name}).exec();
 }
 
 module.exports = {
-    init, getUserCount, getUsers, findUser, insertUser, updateUser, deleteUser, getResearches, 
-    insertResearch, findResearch, insertResearchData, renameResearch, deleteResearch
+    init, getUserCount, getUsers, findUser, verifyUser, insertUser, updateUser, deleteUser, getResearches, 
+    insertResearch, findResearchById, findResearchByName, insertResearchData, renameResearch, deleteResearch
 };

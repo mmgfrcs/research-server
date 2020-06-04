@@ -1,6 +1,4 @@
 const express = require("express");
-const yaml = require("yaml");
-const fs = require("fs");
 const passport = require("passport");
 const db = require("../src/db");
 const session = require("express-session");
@@ -9,22 +7,27 @@ const LocalStrategy = require("passport-local").Strategy;
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { check, validationResult } = require('express-validator');
+const logger = require("../src/logger");
+const config = require("../src/configLoader");
 
 let router = express.Router();
-let config = undefined;
-
 
 passport.use(new LocalStrategy(function(username, pass, done) {
-    let verify = db.findUser(username, pass);
-    if(verify !== undefined) {
-        console.log("Login " + username + " success");
-        //Success
-        return done(null, verify);
-    }
-    else {
-        console.log("Login " + username + " failed");
-        return done(null, false, {message: "Wrong username or password."});
-    }
+    db.verifyUser(username, pass).then((verified) => {
+        if(verified) {
+            logger.info("Login attempt for " + username + " succeeded");
+            //Success
+            return db.findUser({name: username});
+        }
+        else {
+            logger.info("Login attempt for " + username + " failed");
+            return Promise.resolve(false);
+        }
+    }).then(user=> {
+        if(user == false) return done(null, user, {message: "Wrong username or password."});
+        else return done(null, user);
+    });
+
 }));
 
 passport.serializeUser(function(user, cb) {
@@ -32,9 +35,9 @@ passport.serializeUser(function(user, cb) {
 });
 
 passport.deserializeUser(function(id, cb) {
-    let desUser = db.findUser(id);
-    cb(null, desUser);
-
+    db.findUser({name: id}).then(user=>{
+        cb(null, user);
+    });
 });
 
 router.use(session({ secret: 'res-srv', resave: true, saveUninitialized: false }));
@@ -42,21 +45,19 @@ router.use(passport.initialize());
 router.use(passport.session());
 router.use(flash());
 
-//Get config
-const file = fs.readFileSync('./config/config.yml', 'utf8');
-config = yaml.parse(file);
-
 router.use(express.static("public"));
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
     let researches = [];
-    if(req.user !== undefined && req.user.permission > 0) researches = db.getResearches();
-    else researches = db.getResearches().filter(val => val.name == req.user.name);
+    if(req.user !== undefined) {
+        if(req.user.permission > 0) researches = await db.getResearches();
+        else researches = (await db.getResearches()).filter(val => val.name == req.user.name);
+    }
     res.render("index", {
         title: config.serverName,
-        firstStart: db.getUserCount > 0,
+        firstStart: await db.getUserCount() > 0,
         user: req.user,
-        userList: db.getUsers(req.user),
+        userList: await db.getUsers(req.user),
         researches: researches,
         loginFail: req.query.login || false
     });
@@ -78,7 +79,7 @@ router.post("/researcher", [
             req.flash("success","Researcher added");
         }
         catch(err) {
-            console.error(err);
+            logger.error(err);
             req.flash("error", "Error in adding researcher: " + err.message);
         }
     }
@@ -97,7 +98,7 @@ router.post("/research", [
             req.flash("success","Research added");
         }
         catch(err) {
-            console.error(err);
+            logger.error(err);
             req.flash("error", "Error in adding research: " + err.message);
         }
     }
@@ -111,7 +112,7 @@ router.get("/research/:researchId", (req, res) => {
     }
     res.render("research", {
         title: config.serverName,
-        researchObj: db.findResearch(req.query.researchId)
+        researchObj: db.findResearch(req.params.researchId)
     });
 });
 

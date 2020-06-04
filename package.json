@@ -4,7 +4,7 @@
   "description": "A server for collecting, aggregating, and summarizing research data",
   "main": "app.js",
   "scripts": {
-    "start": "node .",
+    "start": "node . | ./node_modules/.bin/bunyan",
     "test": "./node_modules/.bin/nyc --reporter=lcovonly --reporter=text ./node_modules/.bin/mocha --exit"
   },
   "keywords": [
@@ -34,7 +34,9 @@
   "dependencies": {
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
+    "bunyan": "^1.8.12",
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "ejs": "^2.6.1",
     "express": "^4.17.1",
     "express-flash": "0.0.2",
@@ -42,8 +44,9 @@
     "express-validator": "^6.5.0",
     "helmet": "^3.22.0",
     "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.17",
     "passport": "^0.4.1",
-    "passport-jwt": "^4.0.0",
+    "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
     "yaml": "^1.10.0"
   }

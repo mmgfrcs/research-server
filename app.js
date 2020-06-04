@@ -1,25 +1,45 @@
+//Load env vars
+require("dotenv").config();
 //Dependents
-let express = require("express");
-let bodyparser = require("body-parser");
-let helmet = require("helmet");
-let cors = require("cors");
-let path = require("path");
+const express = require("express");
+const bodyparser = require("body-parser");
+const helmet = require("helmet");
+const cors = require("cors");
+const path = require("path");
+const logger = require("./src/logger");
 
 //Routes and Scripts
-let db = require("./src/db");
+const db = require("./src/db");
 //let resData = require("./routes/resData");
-let researchers = require("./routes/researchers");
-let mainRoute = require("./routes/mainRoute");
+//const researchers = require("./routes/researchers");
+const mainRoute = require("./routes/mainRoute");
 
 //Configure
-db.init();
+
 let app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-let username = "admin";
-let userpass = "password";
-db.insertUser(username, userpass, true, true);
-console.log("First Startup: User " + username + ", password " + userpass);
+db.init().then(() => {
+    db.getUserCount().then((userCount) => {
+        if(userCount == 0) {
+            let username = "admin";
+            let userpass = "password";
+            db.insertUser(username, userpass, true, true).then(() => {
+                logger.info("First Startup: User " + username + ", password " + userpass);
+                
+                app.listen(3000, () => {
+                    logger.info("Server started");
+                });
+            
+            });
+        }
+        else {
+            app.listen(3000, () => {
+                logger.info("Server started");
+            });
+        }
+    });
+});
 
 //Use dependents
 app.use(helmet({hsts: {maxAge: 900}}));
@@ -27,12 +47,8 @@ app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(cors());
 
-//app.use("/api/data", resData);
-app.use("/api/researcher", researchers);
+//app.use("/api/research", resData);
+//app.use("/api/researcher", researchers);
 app.use("/", mainRoute);
 
-app.listen(3000, () => {
-    console.log("Server started");
-});
-
-module.exports = {app: app, db: db};
+module.exports = app;

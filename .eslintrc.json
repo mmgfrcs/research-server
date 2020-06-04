@@ -19,6 +19,7 @@
         "no-eval": "warn",
         "semi": ["error", "always", {"omitLastInOneLineBlock": true}],
         "curly": ["error", "multi-or-nest"],
-        "block-scoped-var": "error"
+        "block-scoped-var": "error",
+        "no-console":"error"
     }
 }
