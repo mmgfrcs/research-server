@@ -6,6 +6,7 @@ let expect = chai.expect;
 // eslint-disable-next-line no-unused-vars
 let should = chai.should();
 let server = require("../app");
+process.env.MONGODB_URI = process.env.MONGODB_URI_TEST;
 
 chai.use(chaiHttp);
 chai.use(chaiPromise);
@@ -14,7 +15,7 @@ before(function (done) {
     this.timeout(4000);
     setTimeout(function(){
         done();
-    }, 3000);
+    }, 1000);
 });
 
 describe("App", function() {

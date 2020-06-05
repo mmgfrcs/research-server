@@ -41,7 +41,7 @@ async function getUserCount() {
  * @returns {Promise<UserDbData[]>} A Promise resolving in all users returned.
  */
 function getUsers() {
-    return Researcher.find().lean().exec();
+    return Researcher.find({}, {"_id": false, "__v": false}).lean().exec();
 }
 
 /**
@@ -49,7 +49,14 @@ function getUsers() {
  * @param {UserDbData} predicate The search object to match against
  */
 function findUser(predicate) {
-    return Researcher.findOne(predicate).lean().exec();
+    return Researcher.findOne(predicate, {"_id": false, "__v": false}).lean().exec().then(val => {
+        if(val == null) throw new Error("Researcher not found");
+        else return val;
+    });
+}
+
+function userExists(predicate) {
+    return findUser(predicate).then(() => true).catch(() => false);
 }
 
 function verifyUser(nameOrSecret, password) {
@@ -76,8 +83,8 @@ function verifyUser(nameOrSecret, password) {
  * @returns A Promise which resolves to the inserted user
  */
 function insertUser(name, pass, gentoken, admin) {
-    return findUser({name: name}).then((user) => {
-        if(user !== null) throw new Error("Researcher with that name already exists");
+    return userExists({name: name}).then(exists => {
+        if(exists) throw new Error("Research with that name already exists");
         return bcrypt.hash(pass, 10);
     }).then((hash) => {
         let sec = "";
@@ -134,7 +141,7 @@ function deleteUser(name) {
  * @returns {Promise<ResearchDbData[]>}
  */
 function getResearches() {
-    return Research.find().lean().exec();
+    return Research.find({}, {"_id": false, "__v": false}).lean().exec();
 }
 
 /**
@@ -143,50 +150,118 @@ function getResearches() {
  * @returns {Promise<ResearchDbData>}
  */
 function findResearchByName(name) {
-    return Research.findOne({name: name}).lean().exec();
+    return Research.findOne({name: name}, {"_id": false, "__v": false}).lean().exec().then(val => {
+        if(val == null) throw new Error("Research not found");
+        else return val;
+    });
 }
 
 function findResearchById(researchId) {
-    return Research.findOne({researchId: researchId}).lean().exec();
+    return Research.findOne({researchId: researchId}, {"_id": false, "__v": false}).lean().exec().then(val => {
+        if(val == null) throw new Error("Research not found");
+        else return val;
+    });
+}
+
+function researchExistsByName(name) {
+    return findResearchByName(name).then(() => true).catch(() => false);
+}
+
+function researchExistsById(researchId) {
+    return findResearchById(researchId).then(() => true).catch(() => false);
 }
 
 function insertResearch(name, ...researchers) {
-    return findResearchByName(name).then((res) => {
-        if(res !== null) return Promise.reject(new Error("Research with that name already exists"));
+    return researchExistsByName(name).then((exists) => {
+        if(exists) throw new Error("Research with that name already exists");
+        let set = new Set(researchers);
+        return Promise.all(Array.from(set).map(async (researcher) => {
+            await findUser({name: researcher});
+            return researcher;
+        }));
+    }).then(vals=> {
         let newResearch = new Research({
             name: name,
-            researchers: researchers,
-            researchId: crypto.randomBytes(10).toString('hex'),
+            researchers: vals,
+            researchId: crypto.randomBytes(20).toString('hex'),
             data: []
         });
             
         return newResearch.save();
     });
-
 }
 
-function insertResearchData(name, resData) {
-    return Research.findOne({name: name}).exec().then(res => {
+function insertResearchData(researchId, resData) {
+    return Research.findOne({researchId: researchId}).exec().then(res => {
+        if(res == null) throw new Error("Research not found");
         res.data.push(resData);
         return res.save();
     });
 }
 
-function renameResearch(name, newName) {
-    return findResearchByName(name).then(res=>{
+/**
+ * Insert new researchers to research
+ * @param {String} researchId The research to add to, found by its ID
+ * @param {Array<String>} researchers The array of researcher names
+ */
+function insertResearchers(researchId, researchers) {
+    return Research.findOne({researchId: researchId}).exec().then(res => {
+        if(res == null) throw new Error("Research not found");
+
+        researchers.push(...res.researchers);
+        let set = new Set(researchers);
+        return Promise.all(Array.from(set).map(async (researcher) => {
+            await findUser({name: researcher});
+            return researcher;
+        })).then(resName=>{
+            res.researchers = resName;
+            return res.save();
+        });
+    });
+}
+
+/**
+ * Delete a researcher
+ * @param {String} researchId The research to delete from, found by its ID
+ * @param {String} researcher The name of researcher to delete
+ */
+function deleteResearcher(researchId, researcher) {
+    return Research.findOne({researchId: researchId}).exec().then(res => {
+        if(res == null) throw new Error("Research not found");
+
+        let idx = res.data.indexOf(researcher);
+        res.data.splice(idx, 1);
+        return res.save();
+    });
+}
+
+function renameResearch(researchId, newName) {
+    return findResearchById(researchId).then(res=>{
         if(res !== null) return bcrypt.hash(newName, 10);
         else return Promise.reject("Research with that name doesn't exist");
     }).then(hash=> {
         return Research.findOneAndUpdate({name: name}, {name: newName, researchId: hash}).exec();
     });
-
 }
 
-function deleteResearch(name){
-    return Research.findOneAndDelete({name: name}).exec();
+function deleteAllResearchData(researchId) {
+    return Research.findOne({researchId: researchId}).exec().then(res => {
+        if(res == null) throw new Error("Research not found");
+        res.data = [];
+        return res.save();
+    });
+}
+
+function deleteResearch(researchId){
+    return Research.findOneAndDelete({researchId: researchId}).exec();
+}
+
+function deleteAllResearches() {
+    return Research.deleteMany({}).exec();
 }
 
 module.exports = {
-    init, getUserCount, getUsers, findUser, verifyUser, insertUser, updateUser, deleteUser, getResearches, 
-    insertResearch, findResearchById, findResearchByName, insertResearchData, renameResearch, deleteResearch
+    init, getUserCount, getUsers, userExists, findUser, verifyUser, insertUser, updateUser, deleteUser, 
+    getResearches, insertResearch, findResearchById, findResearchByName, researchExistsById, researchExistsByName, 
+    insertResearchData, renameResearch, insertResearchers, deleteResearcher, deleteAllResearchData, deleteAllResearches, deleteResearch
 };

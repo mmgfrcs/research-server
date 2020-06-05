@@ -10,7 +10,7 @@ const logger = require("./src/logger");
 
 //Routes and Scripts
 const db = require("./src/db");
-let resData = require("./routes/resData");
+let resData = require("./routes/research");
 //const researchers = require("./routes/researchers");
 const mainRoute = require("./routes/mainRoute");
 

@@ -12,7 +12,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 <body>
-
+    <span id='initUserToken' hidden><%= user !== undefined ? user.token : "" %></span>
+    <span id='initUserSecret' hidden><%= user !== undefined ? user.secret : "" %></span>
     <div class="container pt-3">
     <div class="row">
         <div class="col">
@@ -224,21 +225,21 @@
         </div>
         <!--Add New form-->
         <form class="form d-none mb-2" method="POST" action="/research" id="new-research-form">
-        <div class="row">
-            <div class="col">
-            <h5>New Research</h5>
+            <div class="row">
+                <div class="col">
+                <h5>New Research</h5>
+                </div>
             </div>
-        </div>
-        <div class="form-row form-group">
-            <div class="col">
-            <input class="form-control" type="text" placeholder="Research Name" name="name">
+            <div class="form-row form-group">
+                <div class="col">
+                <input class="form-control" type="text" placeholder="Research Name" name="name">
+                </div>
             </div>
-        </div>
-        <div class="form-row">
-            <div class="col">
-            <button type="submit" class="btn btn-primary btn-block">Add</button>
+            <div class="form-row">
+                <div class="col">
+                <button type="submit" class="btn btn-primary btn-block">Add</button>
+                </div>
             </div>
-        </div>
         </form>
         <!--End Add new form-->
         <div class="row">
@@ -259,7 +260,7 @@
                 <% for( let idx = 0; idx < resdata.length; idx++ ) { %>
                 <tr>
                     <th scope="row"><%= idx + 1 %></th>
-                    <td><%= researches[idx].name %></td>
+                    <td><a href="/research/<%= researches[idx].researchId %>"><%= researches[idx].name %></a></td>
                     <td class="text-break"><%= researches[idx].researchId %></td>
 
                     <% if (researches[idx].researchers != "") { %>
@@ -270,12 +271,11 @@
                     <td><%= researches[idx].data.length %></td>
                     <td>
                         <% if (user.permission > 0) { %>
-                            <a class="btn btn-primary m-1" href="#">Rename</a>
-                            <a class="btn btn-warning m-1" href="#">Add Researcher</a>
-                            <a class="btn btn-danger m-1" href="#">Remove Researcher</a>
-                            <a class="btn btn-danger m-1" href="#">Delete</a>
+                            <span class="btn btn-primary m-1" onclick="renameResearch('<%- researches[idx].researchId %>')">Rename</span>
+                            <span class="btn btn-warning m-1" onclick="addResearcher('<%- researches[idx].researchId %>')">Add Researcher</span>
+                            <span class="btn btn-danger m-1" onclick="removeResearcher('<%- researches[idx].researchId %>')">Remove Researcher</span>
+                            <span class="btn btn-danger m-1" onclick="delResearch('<%- researches[idx].researchId %>')">Delete</span>
                         <% } %>
-
                     </td>
                 </tr>
                 <% } %>

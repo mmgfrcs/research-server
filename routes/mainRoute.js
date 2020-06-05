@@ -75,7 +75,7 @@ router.post("/researcher", [
     else {
         try {
             await db.insertUser(req.body.name, req.body.password, req.body.tokengen || false, req.body.permLvl == 2);
-            if(req.body.permLvl == 1) db.updateUser(req.body.name, {permission: 1});
+            if(req.body.permLvl == 1) await db.updateUser(req.body.name, {permission: 1});
             req.flash("success","Researcher added");
         }
         catch(err) {
@@ -105,14 +105,14 @@ router.post("/research", [
     res.redirect('/');
 });
 
-router.get("/research/:researchId", (req, res) => {
+router.get("/research/:researchId", async (req, res) => {
     if(!req.user) {
         req.flash("error","Not logged in. Please login to continue");
         return res.redirect("/");
     }
     res.render("research", {
         title: config.serverName,
-        researchObj: db.findResearch(req.params.researchId)
+        researchObj: await db.findResearchById(req.params.researchId)
     });
 });
 

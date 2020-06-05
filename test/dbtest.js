@@ -1,20 +1,16 @@
 process.env.NODE_ENV = 'test';
+process.env.MONGODB_URI = process.env.MONGODB_URI_TEST;
 let chai = require("chai");
 let chaiHttp = require('chai-http');
 let chaiPromise = require('chai-as-promised');
 let expect = chai.expect;
 // eslint-disable-next-line no-unused-vars
 let should = chai.should();
+
 let db = require("../src/db");
 
 chai.use(chaiHttp);
 chai.use(chaiPromise);
-
-before(function (done) {
-    setTimeout(function(){
-        done();
-    }, 1000);
-});
 
 describe("Database User Finder", function() {
     this.timeout(5000);
@@ -30,9 +26,7 @@ describe("Database User Finder", function() {
         });
     });
     it("Cannot find user given wrong name", function() {
-        return db.findUser({name: "admn"}).then((user) => {
-            expect(user).to.be.null;
-        });
+        db.findUser({name: "admn"}).should.be.rejected;
     });
 });
 
@@ -127,10 +121,7 @@ describe("Database Research Deletion", function() {
     this.timeout(5000);
     it("Can delete research", function() {
         return db.deleteResearch("research2").then(() => {
-            return db.findResearchByName("research2");
-        }).then((res) => {
-            expect(res).to.be.null;
+            db.findResearchByName("research2").should.be.rejected;
         });
-        
     });
 });
