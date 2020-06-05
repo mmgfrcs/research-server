@@ -80,11 +80,11 @@ describe("Research API (/api/research)", function() {
             done();
         });
     });
-    it("POST / should fail with 200 with name in body", function (done) {
+    it("POST / should succeed with 201 with name in body", function (done) {
         chai.request(server).post("/api/research").auth(secretAdmin, {type: "bearer"}).send({"token": tokenAdmin, "name": "research10"}).end((err, res) => {
             if(err) done(err);
             //expect(res).to.have.cookie("connect.sid");
-            expect(res).to.have.status(400);
+            expect(res).to.have.status(201);
             done();
         });
     });
