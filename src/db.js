@@ -240,7 +240,7 @@ function renameResearch(researchId, newName) {
         if(res !== null) return bcrypt.hash(newName, 10);
         else return Promise.reject("Research with that name doesn't exist");
     }).then(hash=> {
-        return Research.findOneAndUpdate({name: name}, {name: newName, researchId: hash}).exec();
+        return Research.findOneAndUpdate({researchId: researchId}, {name: newName, researchId: hash}).exec();
     });
 }
 
@@ -253,7 +253,10 @@ function deleteAllResearchData(researchId) {
 }
 
 function deleteResearch(researchId){
-    return Research.findOneAndDelete({researchId: researchId}).exec();
+    return Research.findOneAndDelete({researchId: researchId}).exec().then(val=> {
+        if(val == null) throw new Error("Research not found");
+        else Promise.resolve();
+    });
 }
 
 function deleteAllResearches() {

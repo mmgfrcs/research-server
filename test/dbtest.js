@@ -13,10 +13,12 @@ chai.use(chaiHttp);
 chai.use(chaiPromise);
 
 describe("Database User Finder", function() {
-    this.timeout(5000);
+    
     it("Can find all users", function() {
         return db.getUsers().then((user) => {
-            user.should.be.an.instanceOf(Array).with.lengthOf(1);
+            user.should.be.an.instanceOf(Array);
+            user.should.have.length.above(0);
+            expect(user[0].name).to.not.be.undefined;
         });
     });
     it("Can find user given correct name", function() {
@@ -31,7 +33,7 @@ describe("Database User Finder", function() {
 });
 
 describe("Database User Insertion", function() {
-    this.timeout(5000);
+    
     it("Can insert user with pre-generated token and admin position", function() {
         return db.insertUser("testUser2", "testuser", true, true).then(() => {
             return db.findUser({name: "testUser2"});
@@ -48,7 +50,7 @@ describe("Database User Insertion", function() {
 });
 
 describe("Database User Edit", function() {
-    this.timeout(5000);
+    
     it("Can edit data in database", function() {
         return db.updateUser("testUser2", {permission: 1}).then(() => {
             return db.findUser({name: "testUser2"});
@@ -60,19 +62,17 @@ describe("Database User Edit", function() {
 });
 
 describe("Database User Deletion", function() {
-    this.timeout(5000);
+    
     it("Can delete user", function() {
         return db.deleteUser("testUser2").then(() => {
-            return db.getUserCount();
-        }).then((amt) => {
-            expect(amt).eq(1);
+            expect(db.findUser("testUser2")).to.be.rejected;
         });
         
     });
 });
 let resId;
 describe("Database Research Insertion", function() {
-    this.timeout(5000);
+    
     it("Can insert new research with researcher", function() {
         return db.insertResearch("research1", "admin").then(() => {
             return db.findResearchByName("research1");
@@ -88,7 +88,7 @@ describe("Database Research Insertion", function() {
 });
 
 describe("Database Research Finder", function() {
-    this.timeout(5000);
+    
     it("Can find all researches", function() {
         return db.getResearches().then((res) => {
             res.should.be.an.instanceOf(Array).with.lengthOf(1);
@@ -107,21 +107,29 @@ describe("Database Research Finder", function() {
 });
 
 describe("Database Research Edit", function() {
-    this.timeout(5000);
+    
     it("Can rename research", function() {
-        return db.renameResearch("research1", "research2").then(() => {
+        return db.renameResearch(resId, "research2").then(() => {
             return db.findResearchByName("research2");
         }).then((res) => {
+            resId = res.researchId;
             expect(res).to.be.instanceOf(Object).with.property("name", "research2");
         });
     });
 });
 
 describe("Database Research Deletion", function() {
-    this.timeout(5000);
+    
     it("Can delete research", function() {
-        return db.deleteResearch("research2").then(() => {
+        return db.deleteResearch(resId).then(() => {
             db.findResearchByName("research2").should.be.rejected;
         });
+    });
+});
+
+after(function() {
+    return db.userExists("testUser2").then(exist=> {
+        if(exist) return db.deleteUser("testUser2");
+        else return Promise.resolve();
     });
 });
