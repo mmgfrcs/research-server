@@ -241,24 +241,32 @@ function validateInput(req, res, next) {
 
 function checkPermsAndRedirect(permFunc) {
     return function(req, res, next) {
-        if(!permFunc(req)) {
-            res.status(403).render("error", {
-                errorCode: "403",
-                errorMessage: "Forbidden",
-                message: "You don't have enough permission to view this research."
-            });
+        try {
+            if(!permFunc(req)) {
+                res.status(403).render("error", {
+                    errorCode: "403",
+                    errorMessage: "Forbidden",
+                    message: "You don't have enough permission to view this research."
+                });
+            }
+            else next();
+        } catch (err) {
+            next(err);
         }
-        else next();
     };
 }
 
 function checkPermsAndFlash(permFunc) {
     return function(req, res, next) {
-        if(!permFunc(req)) {
-            req.flash("error","Not enough permisson to do this action");
-            res.redirect("/");
+        try {
+            if(!permFunc(req)) {
+                req.flash("error","Not enough permisson to do this action");
+                res.redirect("/");
+            }
+            else next();
+        } catch (err) {
+            next(err);
         }
-        else next();
     };
 }
 
