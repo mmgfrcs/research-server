@@ -83,7 +83,7 @@ describe("App", function() {
         });
     });
     it("Should be able to handle errors in research ID (/research/[id]/researcher)", function(done) {
-        agent.get("/research/id/researcher").send({name: "AAAAAAA"}).end((err, res) => {
+        agent.post("/research/id/researcher").send({name: "AAAAAAA"}).end((err, res) => {
             if(err) return done(err);
             expect(res).to.have.status(400);
             done();

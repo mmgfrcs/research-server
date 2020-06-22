@@ -91,7 +91,7 @@ describe("Database Research Finder", function() {
     
     it("Can find all researches", function() {
         return db.getResearches().then((res) => {
-            res.should.be.an.instanceOf(Array).with.lengthOf(1);
+            res.should.be.an.instanceOf(Array).with.lengthOf(2);
         });
     });
     it("Can find specific research by name", function() {
