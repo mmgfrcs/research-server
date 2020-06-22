@@ -1,0 +1,27 @@
+[
+    {
+        "code": "400",
+        "description": "Bad Request",
+        "message": "The request you send to the server is invalid. Please try again." 
+    },
+    {
+        "code": "401",
+        "description": "Unauthorized",
+        "message": "You are not logged in. Please log in to access this resource." 
+    },
+    {
+        "code": "403",
+        "description": "Forbidden",
+        "message": "You don't have enough permission to view this resource." 
+    },
+    {
+        "code": "404",
+        "description": "Not Found",
+        "message": "The resource you requested is not found on this server." 
+    },
+    {
+        "code": "500",
+        "description": "Server Error",
+        "message": "The server has met an unexpected error." 
+    }
+]
