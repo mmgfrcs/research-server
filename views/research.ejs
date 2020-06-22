@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= researchObj.name %> - <%= title %></title>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel='stylesheet' href='/css/main.css' />
+</head>
+<body>
+    <div class="container-fluid pt-3">
+        <div class="row" id="top">
+          <div class="col">
+            <h1><%= researchObj.name %></h1>
+            <h3 class="text-muted"><%= researchObj.researchId %></h3>
+            <p><b>Researched by </b><%= researchObj.researchers.join(", ") %> </p>
+            <a href="/" class="btn btn-primary btn-block">Back to Home</a>
+          </div>
+        </div>
+        
+        <hr/>
+        <!--Research Data List-->
+        <div class="row" id="researcherList">
+            <div class="col">
+            <h2>Research Data</h2>
+            <p><%= researchObj.data.length %> entries</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <% let keys = [...new Set(researchObj.data.map(val => { return Object.keys(val) }).flat())] %> 
+                <table class="table table-hover" id="dataTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No.</th>
+                            <% for(let key of keys) { %>
+                                <th><%- key %> </th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% let idx = 1 %>
+                        <% for(let val of researchObj.data) { %> 
+                            <tr>
+                                <th><%= idx %></th>
+                                <% for(let key of keys) { %> 
+                                    <td><%= (val[key] || "") %></td>
+                                <% } %>
+                            </tr>
+                            <% idx++ %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+            <a href="#top">Back to Top</a>
+            </div>
+        </div>
+        <!--End Researcher List-->
+    </div>
+</body>
+</html>

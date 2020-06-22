@@ -1,0 +1,41 @@
+
+name: Node.js Per-Commit Test
+
+on:
+  push:
+    branches-ignore:
+      - master
+  pull_request:
+    branches: 
+      - master
+
+jobs:
+  test:
+    name: Test Application
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setting up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+    - name: Install Packages
+      run: npm ci
+    - name: Lint Action
+      uses: samuelmeuli/lint-action@v1.5.3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        eslint: true
+    - name: Start MongoDB for Testing
+      uses: supercharge/mongodb-github-action@1.3.0
+      with:
+        mongodb-version: '4.2'
+    - name: Start Test and Check Coverage
+      env:
+        MONGODB_URI: "mongodb://localhost:27017/test"
+      run: npm test
+    - name: Upload coverage
+      uses: codecov/codecov-action@v1.0.7
+      if: always()
+      with:
+        file: ./coverage/lcov.info # optional

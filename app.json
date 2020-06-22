@@ -1,0 +1,24 @@
+{
+    "name": "Research Server",
+    "description": "A server for collecting, aggregating, and summarizing research data",
+    "keywords": [
+      "research",
+      "server"
+    ],
+    "repository": "https://github.com/mmgfrcs/research-server",
+    "formation": {
+      "web": {
+        "quantity": 1,
+        "size": "free"
+      }
+    },
+    "addons": [ 
+      "mongolab:sandbox"
+    ],
+    "buildpacks": [
+      {
+        "url": "heroku/nodejs"
+      }
+    ]
+  }
+  

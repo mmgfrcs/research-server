@@ -1,0 +1,4 @@
+# The name of the server
+serverName: Research Server
+# On first start, set whether to configure an account automatically or manually
+preconfigure: true
