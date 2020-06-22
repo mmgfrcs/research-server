@@ -31,7 +31,6 @@ describe("App", function() {
         chai.request(server).post("/login").send({"username": "admin", "password": "a"}).end((err, res) => {
             if(err) return done(err);
             //expect(res).to.have.cookie("connect.sid");
-            expect(res).to.have.status(400);
             expect(res.text).to.not.contain("Welcome, admin");
             done();
         });
@@ -42,13 +41,6 @@ describe("App", function() {
             //expect(res).to.have.cookie("connect.sid");
             expect(res).to.have.status(400);
             expect(res.text).to.not.contain("Welcome, admin");
-            done();
-        });
-    });
-    it("Should logout", function(done) {
-        chai.request(server).get("/logout").end((err, res) => {
-            if(err) return done(err);
-            expect(res).to.have.status(200);
             done();
         });
     });
@@ -86,14 +78,21 @@ describe("App", function() {
     it("Should be able to handle errors in research ID (/research/[id])", function(done) {
         agent.get("/research/id").end((err, res) => {
             if(err) return done(err);
-            expect(res.text).to.have.status(400);
+            expect(res).to.have.status(400);
             done();
         });
     });
     it("Should be able to handle errors in research ID (/research/[id]/researcher)", function(done) {
         agent.get("/research/id/researcher").send({name: "AAAAAAA"}).end((err, res) => {
             if(err) return done(err);
-            expect(res.text).to.have.status(400);
+            expect(res).to.have.status(400);
+            done();
+        });
+    });
+    it("Should logout", function(done) {
+        agent.get("/logout").end((err, res) => {
+            if(err) return done(err);
+            expect(res).to.have.status(200);
             done();
         });
     });
