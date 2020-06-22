@@ -82,7 +82,7 @@ router.get("/generate", (req, res) => {
         db.updateUser(req.user.name, {token: token, secret: sec});
         res.redirect("/");
     }
-    else res.status(400).render("index");
+    else res.sendStatus(400);
 });
 
 //All middlewares below requires login
