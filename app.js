@@ -1,21 +1,24 @@
 //Load env vars
 require("dotenv").config();
+//Tell user we're loading stuff
+const logger = require("./src/logger");
+const config = require("./src/configLoader");
+logger.info(config.serverName + " v" + process.env.npm_package_version);
+logger.info("Waiting for database...");
 //Dependents
 const express = require("express");
 const bodyparser = require("body-parser");
 const helmet = require("helmet");
 const cors = require("cors");
 const path = require("path");
-const logger = require("./src/logger");
 
 //Routes and Scripts
 const db = require("./src/db");
-let resData = require("./routes/research");
+const resData = require("./routes/research");
 //const researchers = require("./routes/researchers");
 const mainRoute = require("./routes/mainRoute");
 
 //Configure
-
 let app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -27,7 +30,7 @@ db.init().then(() => {
         else return Promise.resolve(null);
     }).then((val) => {
         if(val !== null) logger.info("First Startup: User " + username + ", password " + userpass);
-        app.listen(3000, () => {
+        app.listen(process.env.PORT || 3000, () => {
             logger.info("Server started");
         });
     });

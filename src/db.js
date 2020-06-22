@@ -156,6 +156,11 @@ function findResearchByName(name) {
     });
 }
 
+/**
+ * 
+ * @param {String} researchId The research ID
+ * @returns {Promise<ResearchDbData>}
+ */
 function findResearchById(researchId) {
     return Research.findOne({researchId: researchId}, {"_id": false, "__v": false}).lean().exec().then(val => {
         if(val == null) throw new Error("Research not found");
@@ -237,10 +242,8 @@ function deleteResearcher(researchId, researcher) {
 
 function renameResearch(researchId, newName) {
     return findResearchById(researchId).then(res=>{
-        if(res !== null) return bcrypt.hash(newName, 10);
+        if(res !== null) return Research.findOneAndUpdate({researchId: researchId}, {name: newName, researchId: crypto.randomBytes(20).toString('hex')}).exec();
         else return Promise.reject("Research with that name doesn't exist");
-    }).then(hash=> {
-        return Research.findOneAndUpdate({researchId: researchId}, {name: newName, researchId: hash}).exec();
     });
 }
 

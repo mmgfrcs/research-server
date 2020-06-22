@@ -35,25 +35,22 @@
                 <table class="table table-hover" id="dataTable">
                     <thead class="thead-dark">
                         <tr>
+                            <th>No.</th>
                             <% for(let key of keys) { %>
                                 <th><%- key %> </th>
                             <% } %>
                         </tr>
                     </thead>
                     <tbody>
-                        <% let idx = 0 %> 
+                        <% let idx = 1 %>
                         <% for(let val of researchObj.data) { %> 
                             <tr>
+                                <th><%= idx %></th>
                                 <% for(let key of keys) { %> 
-                                    <% if (idx == 0) { %>
-                                        <th><%= (val[key] || "") %></th>
-                                    <% } else { %>
-                                        <td><%= (val[key] || "") %></td>
-                                    <% } %>
-                                    <% idx++ %>
+                                    <td><%= (val[key] || "") %></td>
                                 <% } %>
                             </tr>
-                            <% idx=0 %>
+                            <% idx++ %>
                         <% } %>
                     </tbody>
                 </table>

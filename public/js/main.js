@@ -1,11 +1,4 @@
 /* eslint-disable */
-$("#new-user").click(()=> {
-    $("#new-user-form").toggleClass("d-none");
-});
-
-$("#new-research").click(()=> {
-    $("#new-research-form").toggleClass("d-none");
-});
 
 let token = $("#initUserToken").text();
 let secret = $("#initUserSecret").text();
@@ -81,4 +74,8 @@ function delResearch(researchId) {
             alert("Delete Research failed: " + JSON.parse(xhr.responseText).error);
         });
     }
+}
+
+function deleteUser(name) {
+    
 }
