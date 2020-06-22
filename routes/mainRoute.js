@@ -75,6 +75,16 @@ router.get("/logout", (req, res) => {
     res.redirect("/");
 });
 
+router.get("/generate", (req, res) => {
+    if(req.user) {
+        let sec = crypto.randomBytes(20).toString('hex');
+        let token = jwt.sign(req.user.name, sec);
+        db.updateUser(req.user.name, {token: token, secret: sec});
+        res.redirect("/");
+    }
+    else res.status(400).render("/");
+});
+
 //All middlewares below requires login
 router.use((req, res, next) => {
     if(!req.user) {
@@ -183,13 +193,6 @@ router.post("/research", [
     }
     
     res.redirect('/');
-});
-
-router.get("/generate", (req, res) => {
-    let sec = crypto.randomBytes(20).toString('hex');
-    let token = jwt.sign(req.user.name, sec);
-    db.updateUser(req.user.name, {token: token, secret: sec});
-    res.redirect("/");
 });
 
 router.use((err, req, res, next) => {
