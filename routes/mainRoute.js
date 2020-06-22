@@ -82,7 +82,7 @@ router.get("/generate", (req, res) => {
         db.updateUser(req.user.name, {token: token, secret: sec});
         res.redirect("/");
     }
-    else res.status(400).render("/");
+    else res.status(400).render("index");
 });
 
 //All middlewares below requires login
@@ -122,7 +122,7 @@ router.post("/research/:researchId/rename",[
     })
 ], async (req, res) => {
     await db.renameResearch(req.params.researchId, req.body.name);
-    res.render("/");
+    res.render("index");
 });
 
 //Add Researcher to Research
@@ -134,7 +134,7 @@ router.post("/research/:researchId/researcher",[
     })
 ], async (req, res) => {
     await db.insertResearchers(req.params.researchId, [req.body.name]);
-    res.render("/");
+    res.render("index");
 });
 
 //Remove Researcher from Research
@@ -146,7 +146,7 @@ router.post("/research/:researchId/researcher/delete",[
     })
 ], async (req, res) => {
     await db.deleteResearcher(req.params.researchId, [req.body.name]);
-    res.render("/");
+    res.render("index");
 });
 
 //Remove Research
@@ -157,7 +157,7 @@ router.post("/research/:researchId/delete",[
     })
 ], async (req, res) => {
     await db.deleteResearcher(req.params.researchId, [req.body.name]);
-    res.render("/");
+    res.render("index");
 });
 
 //New researcher
@@ -225,7 +225,7 @@ function checkPermsAndFlash(permFunc) {
     return function(req, res, next) {
         if(!permFunc(req)) {
             req.flash("error","Not enough permisson to do this action");
-            res.render("/");
+            res.render("index");
         }
         else next();
     };
