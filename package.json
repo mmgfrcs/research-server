@@ -1,11 +1,11 @@
 {
   "name": "@mmgfrcs/research-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A server for collecting, aggregating, and summarizing research data",
   "main": "app.js",
   "scripts": {
-    "start": "node . | ./node_modules/.bin/bunyan",
-    "test": "./node_modules/.bin/nyc --reporter=lcovonly --reporter=text ./node_modules/.bin/mocha --exit --timeout 5000"
+    "start": "node . | bunyan -o short",
+    "test": "nyc --reporter=lcovonly --reporter=text mocha --exit --timeout 5000"
   },
   "keywords": [
     "research",
@@ -35,6 +35,7 @@
     "terser": "^4.7.0"
   },
   "dependencies": {
+    "async-middleware": "^1.2.1",
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
     "bunyan": "^1.8.12",

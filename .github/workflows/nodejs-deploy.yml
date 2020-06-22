@@ -20,6 +20,8 @@ jobs:
       with:
         version: ${{ steps.projectinfo.outputs.version }}
         prerelease: ${{ startsWith(steps.projectinfo.outputs.version, '0.') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish:
     name: Publish Package
     runs-on: ubuntu-latest
