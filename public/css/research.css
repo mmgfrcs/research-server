@@ -1,0 +1,10 @@
+.table-responsive {
+    height:60vh;
+    overflow:scroll;
+}
+
+thead tr:nth-child(1) th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}

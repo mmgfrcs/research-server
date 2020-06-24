@@ -1,6 +1,6 @@
 let bcrypt = require("bcrypt");
 let mongoose = require("mongoose");
-const logger = require("./logger");
+const logger = require("./logger").child({type: "MongoDB"});
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
@@ -16,6 +16,9 @@ let dbUri = process.env.MONGODB_URI;
  */
 function init() {
     mongoose.set('useFindAndModify', false);
+    mongoose.set('debug', function(coll, method, query, doc) {
+        logger.debug(`${coll}.${method} ${JSON.stringify(query)} ${doc}`);
+    });
     return mongoose.connect(dbUri, {useNewUrlParser: true, useUnifiedTopology: true}).then(()=> {
         logger.info("MongoDB Connected");
     }).catch((err) => {
@@ -234,8 +237,9 @@ function deleteResearcher(researchId, researcher) {
     return Research.findOne({researchId: researchId}).exec().then(res => {
         if(res == null) throw new Error("Research not found");
 
-        let idx = res.data.indexOf(researcher);
-        res.data.splice(idx, 1);
+        let idx = res.researchers.indexOf(researcher);
+        if(idx < 0) throw new Error("Researcher not found");
+        res.researchers.splice(idx, 1);
         return res.save();
     });
 }
