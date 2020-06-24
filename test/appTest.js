@@ -82,13 +82,6 @@ describe("App", function() {
             done();
         });
     });
-    it("Should be able to handle errors in research ID (/research/[id]/researcher)", function(done) {
-        agent.post("/research/id/researcher").send({name: "AAAAAAA"}).end((err, res) => {
-            if(err) return done(err);
-            expect(res).to.have.status(400);
-            done();
-        });
-    });
     it("Should logout", function(done) {
         agent.get("/logout").end((err, res) => {
             if(err) return done(err);
