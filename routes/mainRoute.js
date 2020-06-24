@@ -8,9 +8,11 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const asyncWrap = require("async-middleware").wrap;
 const { check, validationResult } = require('express-validator');
+const excel = require("excel4node");
 const logger = require("../src/logger");
 const config = require("../src/configLoader");
 const httpErrors = require("../resources/httpErrors.json");
+const mainLib = require("../lib/mainLib");
 
 let router = express.Router();
 
@@ -107,7 +109,9 @@ router.get("/research/:researchId", asyncWrap(async (req, res) => {
     if(research.researchers.includes(req.user.name) || req.user.permission > 0) {
         res.render("research", {
             title: config.serverName,
-            researchObj: research
+            researchObj: research,
+            checkKeys: mainLib.checkKeys,
+            byString: mainLib.byString 
         });
     }
     else {
@@ -119,51 +123,61 @@ router.get("/research/:researchId", asyncWrap(async (req, res) => {
     }
 }));
 
-//Rename Research
-router.post("/research/:researchId/rename",[
-    check("name").isLength({min: 4}).escape(), 
-    validateInput,
-    checkPermsAndRedirect(async (req) => {
-        let research = await db.findResearchById(req.params.researchId);
-        return research.researchers.includes(req.user.name) || req.user.permission > 0;
-    })
-], asyncWrap(async (req, res) => {
-    await db.renameResearch(req.params.researchId, req.body.name);
-    res.redirect("/");
+//Export research details
+router.get("/research/:researchId/export", asyncWrap(async (req, res) => {
+    let research = await db.findResearchById(req.params.researchId);
+    if(research.researchers.includes(req.user.name) || req.user.permission > 0) {
+        let keys = mainLib.checkKeys(research.data);
+        let researchData = req.query.q ? research.data.filter(x=>{
+            logger.debug(`Export: ${keys[0]} ${mainLib.byString(x, keys[0])} = ${mainLib.byString(x, keys[0]).toLowerCase().includes(req.query.q)}`);
+            return mainLib.byString(x, keys[0]).toLowerCase().includes(req.query.q);
+        }) : research.data;
+        logger.info(`Exporting ${research.name}: Query ${req.query.q} vs ${keys[0]} => ${researchData.length}/${research.data.length} entries`);
+
+        keys = mainLib.checkKeys(researchData);
+
+        let wb = new excel.Workbook();
+        let ws = wb.addWorksheet(research.name);
+
+        let row = 2, col = 1;
+        for(let key of keys) {
+            ws.cell(1, col).string(mainLib.camelCaseToTitleCase(key));
+            col++;
+        }
+
+        for(let val of researchData) { 
+            col = 1;
+            for(let key of keys) {
+                let keyVal = mainLib.byString(val, key);
+                if (keyVal !== undefined) {
+                    if (typeof keyVal === "number") 
+                        ws.cell(row, col).number(keyVal);
+                    else ws.cell(row, col).string(keyVal.toString());
+                }
+                col++;
+            }
+            row++;
+        }
+
+        wb.write(`${research.name}.xlsx`, res);
+    }
+    else {
+        res.status(403).render("error", {
+            errorCode: "403",
+            errorMessage: "Forbidden",
+            message: "You don't have enough permission to view this research."
+        });
+    }
 }));
 
-//Add Researcher to Research
-router.post("/research/:researchId/researcher",[
+//Remove Researcher (temporary)
+router.post("/researcher/:name",[
     check("name").escape(), 
     checkPermsAndFlash(async (req) => {
-        let research = await db.findResearchById(req.params.researchId);
-        return research.researchers.includes(req.user.name) || req.user.permission > 0;
+        return req.user.permission == 2;
     })
 ], asyncWrap(async (req, res) => {
-    await db.insertResearchers(req.params.researchId, [req.body.name]);
-    res.redirect("/");
-}));
-
-//Remove Researcher from Research
-router.post("/research/:researchId/researcher/delete",[
-    check("name").escape(), 
-    checkPermsAndFlash(async (req) => {
-        let research = await db.findResearchById(req.params.researchId);
-        return research.researchers.includes(req.user.name) || req.user.permission > 0;
-    })
-], asyncWrap(async (req, res) => {
-    await db.deleteResearcher(req.params.researchId, [req.body.name]);
-    res.redirect("/");
-}));
-
-//Remove Research
-router.post("/research/:researchId/delete",[
-    checkPermsAndFlash(async (req) => {
-        let research = await db.findResearchById(req.params.researchId);
-        return research.researchers.includes(req.user.name) || req.user.permission > 0;
-    })
-], asyncWrap(async (req, res) => {
-    await db.deleteResearcher(req.params.researchId, [req.body.name]);
+    await db.deleteUser(req.params.name);
     res.redirect("/");
 }));
 
@@ -237,23 +251,6 @@ function validateInput(req, res, next) {
         res.redirect("/");
     }
     else next();
-}
-
-function checkPermsAndRedirect(permFunc) {
-    return function(req, res, next) {
-        try {
-            if(!permFunc(req)) {
-                res.status(403).render("error", {
-                    errorCode: "403",
-                    errorMessage: "Forbidden",
-                    message: "You don't have enough permission to view this research."
-                });
-            }
-            else next();
-        } catch (err) {
-            next(err);
-        }
-    };
 }
 
 function checkPermsAndFlash(permFunc) {

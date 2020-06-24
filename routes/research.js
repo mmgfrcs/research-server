@@ -80,7 +80,7 @@ router.put("/:researchId", checkPermLevel(1), check("name").exists().escape(), (
 //DELETE specific research
 router.delete("/:researchId", checkPermLevel(1), (req, res, next) => {
     db.deleteResearch(req.params.researchId).then(doc=> {
-        if(doc != null) res.sendStatus(200);
+        if(doc == null) res.sendStatus(200);
         else res.sendStatus(404);
     }).catch(next);
 });
@@ -119,7 +119,7 @@ router.post("/:researchId/data",
 );
 
 //DELETE all research data
-router.post("/:researchId/data",
+router.delete("/:researchId/data",
     (req, res, next) => {
         db.findResearchById(req.params.researchId).then(result=> {
             if(req.user.permission > 0 || result.researchers.includes(req.user.name)) 
@@ -169,7 +169,7 @@ router.post("/:researchId/researcher",
 );
 
 //DELETE a researcher
-router.post("/:researchId/researcher/:name",
+router.delete("/:researchId/researcher/:name",
     checkPermLevel(1),
     (req, res, next) => {
         db.deleteResearcher(req.params.researchId, req.params.name).then(()=> {

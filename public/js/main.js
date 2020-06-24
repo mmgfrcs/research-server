@@ -77,5 +77,19 @@ function delResearch(researchId) {
 }
 
 function deleteUser(name) {
-    
+    // let rs = confirm("Are you sure you wanted to remove this user? This cannot be undone!");
+    // if(rs) {
+    //     $.ajax({
+    //         url: "/researcher/" + name,
+    //         method: "DELETE",
+    //         headers: { "Authorization": "Bearer " + secret },
+    //         data: {
+    //             "token": token
+    //         }
+    //     }).then(() => {
+    //         window.location.reload();
+    //     }).fail(function(xhr, status, error) {
+    //         alert("Delete Research failed: " + JSON.parse(xhr.responseText).error);
+    //     });
+    // }
 }
